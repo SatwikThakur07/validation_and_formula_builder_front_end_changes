@@ -1,0 +1,86 @@
+.formula-builder-container {
+  width: 100%;
+}
+
+.formula-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 4px;
+  min-height: 50px;
+}
+
+.formula-item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.field-badge {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.operator-badge {
+  background: #fff3e0;
+  color: #f57c00;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.formula-badge {
+  background: #f3e5f5;
+  color: #7b1fa2;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.control-group {
+  margin-bottom: 16px;
+}
+
+.control-group label {
+  margin-bottom: 8px;
+  display: block;
+  font-weight: 500;
+  color: #374151;
+}
+
+.formula-controls {
+  margin-top: 24px;
+}
+
+.formula-cli-display {
+  background: #1e1e1e;
+  padding: 12px;
+  border-radius: 4px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  font-family: 'Courier New', monospace;
+}
+
+.formula-cli-display code {
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.drag-drop-area {
+  transition: all 0.2s ease;
+}
+
+.drag-drop-area.drag-over {
+  background-color: #e3f2fd;
+  border-color: #1976d2;
+}
+
