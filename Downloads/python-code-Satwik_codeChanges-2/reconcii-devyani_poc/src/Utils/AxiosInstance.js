@@ -27,7 +27,10 @@ export const handleError = ({ message, data, status }) => {
 // Intercept request to set dynamic baseURL
 instance.interceptors.request.use((config) => {
   // If a specific baseURL is passed, use it; otherwise, default to the instance's baseURL
-  if (config?.url?.includes(sso)) {
+  // Check for login endpoint first (it's at /api/v1/login, not under /devyani-sso-service)
+  if (config?.url === "/api/v1/login" || config?.url?.endsWith("/api/v1/login")) {
+    config.baseURL = ssoBaseURL;
+  } else if (config?.url?.includes(sso)) {
     config.baseURL = ssoBaseURL;
   }
   if (config?.url?.includes(reconcii)) {
