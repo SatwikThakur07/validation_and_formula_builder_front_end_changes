@@ -78,12 +78,14 @@ const useAuth = () => {
         deviceId: deviceId,
         Authorization: "",
       };
-      // const response = await requestCallGet(apiEndpoints.ACCESS_CORS);
+      
+      // Login endpoint: https://reconcii.corepeelers.com/api/auth/login
       const response = await requestCallPost(
         apiEndpoints.ACCESS_TOKEN,
         loginParams,
         additionalHeaders
       );
+      
       setLoading(false);
       
       // Log response for debugging
@@ -111,9 +113,13 @@ const useAuth = () => {
           return;
         }
         
+        // Handle different response formats:
+        // Format 1: {access_token, token_type, user} (direct from FastAPI)
+        // Format 2: {data: {access_token, user}} (wrapped)
+        // Format 3: {access_token, user} (simplified)
         const accessToken = apiData?.access_token || apiData?.data?.access_token;
         const refreshToken = apiData?.refresh_token || apiData?.data?.refresh_token;
-        const userPayload = apiData?.user || apiData?.data || {};
+        const userPayload = apiData?.user || apiData?.data?.user || apiData?.data || {};
         
         console.log("[LOGIN] Access Token:", accessToken ? "Found" : "Missing");
         console.log("[LOGIN] User Payload:", userPayload);
@@ -193,8 +199,13 @@ const useAuth = () => {
         return;
       }
       // Handle failed login
-      const errorMessage = response?.message || response?.data?.detail || "Invalid credentials!";
+      const errorMessage = response?.message || 
+                          response?.data?.detail || 
+                          response?.data?.message ||
+                          "Invalid credentials!";
       console.error("[LOGIN] Login failed:", errorMessage);
+      console.error("[LOGIN] Full error response:", response);
+      setLoginErrors({ status: errorMessage });
       setToastMessage({ message: errorMessage, type: "error" });
     } catch (error) {
       console.error("[LOGIN] Login exception:", error);
@@ -210,15 +221,33 @@ const useAuth = () => {
                         error?.message || 
                         "Login failed. Please try again.";
       
+      // Check for specific HTTP status codes
+      if (error?.response?.status === 401) {
+        errorMessage = "Invalid username or password. Please check your credentials.";
+      } else if (error?.response?.status === 403) {
+        errorMessage = "Access denied. Please contact your administrator.";
+      } else if (error?.response?.status === 404) {
+        errorMessage = "Login endpoint not found. Please check the server configuration.";
+      } else if (error?.response?.status === 500) {
+        errorMessage = "Server error. Please try again later.";
+      }
+      
       // Check if it's a network error (backend not running)
       if (error?.message?.includes("Network Error") || 
           error?.message?.includes("ERR_CONNECTION_REFUSED") ||
           error?.message?.includes("timeout") ||
           !error?.response) {
-        errorMessage = "Cannot connect to server. Please ensure the backend server is running on port 8034.";
+        errorMessage = "Cannot connect to server. Please ensure the backend server is running.";
+      }
+      
+      // Check for CORS errors
+      if (error?.message?.includes("CORS") || error?.code === "ERR_NETWORK") {
+        errorMessage = "CORS error. Please check server CORS configuration.";
       }
       
       console.error("[LOGIN] Final error message:", errorMessage);
+      console.error("[LOGIN] Error status:", error?.response?.status);
+      setLoginErrors({ status: errorMessage });
       setToastMessage({ message: errorMessage, type: "error" });
     }
   };

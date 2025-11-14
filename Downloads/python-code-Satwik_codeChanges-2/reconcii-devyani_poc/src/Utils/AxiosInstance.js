@@ -17,6 +17,7 @@ const instance = axios.create({
   headers: {
     langId: 1,
     Accept: "application/json",
+    "Content-Type": "application/json",
   },
 });
 
@@ -27,22 +28,36 @@ export const handleError = ({ message, data, status }) => {
 // Intercept request to set dynamic baseURL
 instance.interceptors.request.use((config) => {
   // If a specific baseURL is passed, use it; otherwise, default to the instance's baseURL
-  // Check for login endpoint first (it's at /login, root level of ssoBaseURL, not under /devyani-sso-service)
-  if (config?.url === "/login" || config?.url?.endsWith("/login")) {
+  // Check for login endpoint first (it's at /api/auth/login on devyanissoapi.corepeelers.com)
+  if (config?.url === "/api/auth/login" || config?.url?.endsWith("/api/auth/login")) {
     config.baseURL = ssoBaseURL;
-  } else if (config?.url?.includes(sso)) {
+  } 
+  // Formula Builder endpoints (recologics) - use admin base URL
+  else if (config?.url?.includes("/api/v1/recologics") || 
+           config?.url?.includes("/api/v1/tenderList") ||
+           config?.url?.includes("/api/v1/tenderWisetables") ||
+           config?.url?.includes("/api/v1/datasource") ||
+           config?.url?.includes("/api/v1/recologics/findOldestEffectiveDate")) {
+    config.baseURL = reconciiAdminBaseURL;
+  }
+  // SSO endpoints
+  else if (config?.url?.includes(sso)) {
     config.baseURL = ssoBaseURL;
   }
-  if (config?.url?.includes(reconcii)) {
+  // Reconciliation service endpoints
+  else if (config?.url?.includes(reconcii)) {
     config.baseURL = reconciiBaseURL;
   }
-  if (config?.url?.includes(activityURL)) {
+  // Activity/audit log endpoints
+  else if (config?.url?.includes(activityURL)) {
     config.baseURL = reconciiAdminBaseURL;
   }
-  if (config?.url?.includes(nodePasswordUrls)) {
+  // Node password URLs
+  else if (config?.url?.includes(nodePasswordUrls)) {
     config.baseURL = reconciiAdminBaseURL;
   }
-  if (config?.url?.includes(reconciliationNodeURL)) {
+  // Reconciliation node URLs
+  else if (config?.url?.includes(reconciliationNodeURL)) {
     config.baseURL = reconciiAdminBaseURL;
   }
   return config;

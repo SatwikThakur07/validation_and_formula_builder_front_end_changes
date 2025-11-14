@@ -3,9 +3,6 @@ import { apiEndpoints } from "../../../ServiceRequest/APIEndPoints";
 import { requestCallGet, requestCallPost } from "../../../ServiceRequest/APIFunctions";
 import { useLoader } from "../../../Utils/Loader";
 
-// Get the base URL for reconciliation service
-const RECONCILIATION_SERVICE = apiEndpoints.GET_RECO_LOGICS_BY_TOPIC.split("/api/v1")[0];
-
 const OPERATOR_OPTIONS = [
   { value: "+", label: "+ (Add)" },
   { value: "-", label: "- (Subtract)" },
@@ -115,20 +112,52 @@ const useFormulaBuilder = () => {
   const fetchSavedFormulas = async () => {
     try {
       setLoading(true);
-      const response = await requestCallPost(apiEndpoints.GET_RECO_LOGICS_BY_TOPIC, {
-        tenders: selectedTenders,
-      });
-      if (response && response.status && response.data?.data) {
-        const formulas = response.data.data.map((item, index) => ({
+      // Use GET_ALL_RECO_LOGICS with tender filter
+      const url = `${apiEndpoints.GET_ALL_RECO_LOGICS}?tenders=${encodeURIComponent(selectedTenders)}`;
+      const response = await requestCallGet(url);
+      
+      console.log("[FORMULA_BUILDER] Fetch saved formulas response:", response);
+      
+      if (response && response.status) {
+        // Handle different response formats
+        let formulasData = [];
+        if (Array.isArray(response.data)) {
+          formulasData = response.data;
+        } else if (Array.isArray(response.data?.data)) {
+          formulasData = response.data.data;
+        } else if (response.data?.formulas) {
+          formulasData = Array.isArray(response.data.formulas) 
+            ? response.data.formulas 
+            : [response.data.formulas];
+        }
+        
+        if (formulasData.length > 0) {
+          const formulas = formulasData.map((item, index) => ({
           value: `formula_${item.id || index}`,
-          label: item.tender || `Formula ${index + 1}`,
+            label: item.logicName || item.tender || `Formula ${index + 1}`,
           formulaData: item,
         }));
         setFormulaOptions(formulas);
-        setSavedFormulas(response.data.data);
+          setSavedFormulas(formulasData);
+          console.log(`[FORMULA_BUILDER] Loaded ${formulas.length} saved formulas`);
+        } else {
+          console.log("[FORMULA_BUILDER] No saved formulas found");
+          setFormulaOptions([]);
+          setSavedFormulas([]);
+        }
+      } else {
+        console.warn("[FORMULA_BUILDER] Failed to fetch saved formulas:", response?.message);
+        setFormulaOptions([]);
+        setSavedFormulas([]);
       }
     } catch (error) {
       console.error("[FORMULA_BUILDER] Error fetching saved formulas:", error);
+      setToastMessage({
+        message: "Failed to load saved formulas. Please try again.",
+        type: "error",
+      });
+      setFormulaOptions([]);
+      setSavedFormulas([]);
     } finally {
       setLoading(false);
     }

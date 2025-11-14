@@ -15,13 +15,21 @@ export async function requestCallPost(
     console.log("[requestCallPost] Data isEmpty:", !data || (typeof data === 'object' && Object.keys(data).length === 0));
   }
   
-  let headers = {};
+  let headers = {
+    "Content-Type": "application/json",
+  };
   if (localStorage.getItem("ReconciiToken")) {
     headers = {
+      ...headers,
       Authorization: "Bearer " + localStorage.getItem("ReconciiToken"),
     };
   }
   headers = { ...headers, ...additionalHeaders };
+  
+  // Don't send Authorization header for login endpoint
+  if (apiName?.includes("login") || apiName === "/login" || apiName === "/api/auth/login") {
+    delete headers.Authorization;
+  }
   
   if (apiName?.includes("generate-excel") || apiName?.includes("generate-receivable-receipt-excel")) {
     console.log("[requestCallPost] Request config:", {
@@ -29,6 +37,16 @@ export async function requestCallPost(
       method: "POST",
       headers: headers,
       data: data
+    });
+  }
+  
+  // Enhanced logging for login
+  if (apiName?.includes("login") || apiName === "/login" || apiName === "/api/auth/login") {
+    console.log("[requestCallPost] Login request:", {
+      url: apiName,
+      baseURL: AxiosInstance.defaults.baseURL,
+      headers: headers,
+      data: { username: data?.username, password: "***" }
     });
   }
   
@@ -75,8 +93,10 @@ export async function requestCallPost(
         console.error("[requestCallPost] Error response:", err?.response ? {
           status: err.response.status,
           statusText: err.response.statusText,
-          data: err.response.data
+          data: err.response.data,
+          headers: err.response.headers
         } : "No response");
+        console.error("[requestCallPost] Error originalError:", err?.originalError);
       }
       
       // Extract error message from response
@@ -86,6 +106,17 @@ export async function requestCallPost(
                         err?.toString() || 
                         "Request failed";
       
+      // Handle specific HTTP status codes
+      if (err?.response?.status === 401) {
+        errorMessage = err?.response?.data?.detail || "Invalid username or password";
+      } else if (err?.response?.status === 403) {
+        errorMessage = err?.response?.data?.detail || "Access denied. Authentication required.";
+      } else if (err?.response?.status === 404) {
+        errorMessage = "Login endpoint not found. Please check the server configuration.";
+      } else if (err?.response?.status === 500) {
+        errorMessage = "Server error. Please try again later.";
+      }
+      
       // Check if it's a network error (backend not running)
       if (err?.message?.includes("Network Error") || 
           err?.code === "ECONNREFUSED" ||
@@ -94,10 +125,16 @@ export async function requestCallPost(
         errorMessage = "Cannot connect to server. Please ensure the backend server is running.";
       }
       
+      // Check for CORS errors
+      if (err?.message?.includes("CORS") || err?.code === "ERR_NETWORK") {
+        errorMessage = "CORS error. Please check server CORS configuration.";
+      }
+      
       return {
         status: false,
         message: errorMessage,
-        data: err?.response?.data || null, // Include response data for better error handling
+        data: err?.response?.data || null,
+        statusCode: err?.response?.status || null, // Include status code for better error handling
       };
     });
 }

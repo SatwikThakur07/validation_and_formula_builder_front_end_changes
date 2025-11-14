@@ -95,8 +95,8 @@ const CUSTOM = "/custom";
 
 const apiEndpoints = {
   // !AUTH --- DO NOT TOUCH
-  // Login endpoint is at root level of ssoBaseURL (just /login, not under /devyani-sso-service/api/v1)
-  ACCESS_TOKEN: `/login`,
+  // Login endpoint: https://devyanissoapi.corepeelers.com/api/auth/login
+  ACCESS_TOKEN: `/api/auth/login`,
   ACCESS_CORS: `${sso}${AUTH}/access/cors`,
 
   REFRESH_TOKEN: `${sso}${AUTH}/refresh/token`,
