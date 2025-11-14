@@ -40,7 +40,7 @@
 // Devyani URLS - STAGING
 
 const baseURL = "https://devyanirecoapi.corepeelers.com";
-const ssoBaseURL = "https://devyanissoapi.corepeelers.com";
+const ssoBaseURL = "https://devyani.corepeelers.com";
 const reconciiBaseURL = "https://devyaniuploadapi.corepeelers.com";
 const reconciiAdminBaseURL = "https://devyaniadminapi.corepeelers.com";
 
@@ -95,7 +95,7 @@ const CUSTOM = "/custom";
 
 const apiEndpoints = {
   // !AUTH --- DO NOT TOUCH
-  // Login endpoint: https://devyanissoapi.corepeelers.com/api/auth/login
+  // Login endpoint: https://devyani.corepeelers.com/api/auth/login
   ACCESS_TOKEN: `/api/auth/login`,
   ACCESS_CORS: `${sso}${AUTH}/access/cors`,
 
