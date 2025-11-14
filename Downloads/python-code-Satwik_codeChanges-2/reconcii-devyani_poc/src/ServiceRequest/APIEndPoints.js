@@ -37,26 +37,24 @@
 // const RECONCILIATION_SERVICE = "/reconcii-demo-service";
 
 // Devyani URLS
-// Devyani URLS - LOCAL DEVELOPMENT
+// Devyani URLS - STAGING
 
-// const baseURL = "https://devyanirecoapi.corepeelers.com";
-// const ssoBaseURL = "https://devyanissoapi.corepeelers.com";
-// const reconciiBaseURL = "https://devyaniuploadapi.corepeelers.com";
-// const reconciiAdminBaseURL = "https://devyaniadminapi.corepeelers.com";
+const baseURL = "https://devyanirecoapi.corepeelers.com";
+const ssoBaseURL = "https://devyanissoapi.corepeelers.com";
+const reconciiBaseURL = "https://devyaniuploadapi.corepeelers.com";
+const reconciiAdminBaseURL = "https://devyaniadminapi.corepeelers.com";
 
-const baseURL = "http://localhost:8034";
-const ssoBaseURL = "http://localhost:8034";
-const reconciiBaseURL = "http://localhost:8034";
-const reconciiAdminBaseURL = "http://localhost:8034";
+// LOCAL DEVELOPMENT (commented out)
+// const baseURL = "http://localhost:8034";
+// const ssoBaseURL = "http://localhost:8034";
+// const reconciiBaseURL = "http://localhost:8034";
+// const reconciiAdminBaseURL = "http://localhost:8034";
 
-// const sso = "/devyani-sso-service/api/v1";
-// const reconcii = "/devyani-service/api";
-const sso = "/api/auth";
-const reconcii = "/api/uploader";
+const sso = "/devyani-sso-service/api/v1";
+const reconcii = "/devyani-service/api";
 const activityURL = "/api/audit_log";
 const reconciliationNodeURL = "/api/reconciliation";
-// const RECONCILIATION_SERVICE = "/reconcii-devyani-service";
-const RECONCILIATION_SERVICE = "/api/reconciliation";
+const RECONCILIATION_SERVICE = "/reconcii-devyani-service";
 
 // Bercos URLS
 

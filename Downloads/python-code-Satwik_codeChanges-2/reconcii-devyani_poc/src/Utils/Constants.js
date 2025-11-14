@@ -1,6 +1,8 @@
 const Constants = {
-    // BASE_URL: 'https://prop.quantuminsight.in/api/',
-    BASE_URL: 'http://localhost:8096/api/',
+    // STAGING URL
+    BASE_URL: 'https://devyaniadminapi.corepeelers.com/api/',
+    // LOCAL DEVELOPMENT (commented out)
+    // BASE_URL: 'http://localhost:8096/api/',
 }
 
 export default Constants
