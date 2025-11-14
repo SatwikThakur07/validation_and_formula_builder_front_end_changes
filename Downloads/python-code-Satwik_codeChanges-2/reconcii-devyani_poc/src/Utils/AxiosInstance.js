@@ -28,8 +28,8 @@ export const handleError = ({ message, data, status }) => {
 // Intercept request to set dynamic baseURL
 instance.interceptors.request.use((config) => {
   // If a specific baseURL is passed, use it; otherwise, default to the instance's baseURL
-  // Check for login endpoint first (it's at /api/auth/login on devyanissoapi.corepeelers.com)
-  if (config?.url === "/api/auth/login" || config?.url?.endsWith("/api/auth/login")) {
+  // Check for login endpoint first (it's at /login on devyani.corepeelers.com)
+  if (config?.url === "/login" || config?.url?.endsWith("/login")) {
     config.baseURL = ssoBaseURL;
   } 
   // Formula Builder endpoints (recologics) - use admin base URL

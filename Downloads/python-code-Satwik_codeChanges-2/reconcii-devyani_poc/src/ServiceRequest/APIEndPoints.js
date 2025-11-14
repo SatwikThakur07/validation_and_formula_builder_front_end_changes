@@ -95,8 +95,8 @@ const CUSTOM = "/custom";
 
 const apiEndpoints = {
   // !AUTH --- DO NOT TOUCH
-  // Login endpoint: https://devyani.corepeelers.com/api/auth/login
-  ACCESS_TOKEN: `/api/auth/login`,
+  // Login endpoint: https://devyani.corepeelers.com/login
+  ACCESS_TOKEN: `/login`,
   ACCESS_CORS: `${sso}${AUTH}/access/cors`,
 
   REFRESH_TOKEN: `${sso}${AUTH}/refresh/token`,
