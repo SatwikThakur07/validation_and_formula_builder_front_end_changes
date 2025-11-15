@@ -231,10 +231,11 @@ const apiEndpoints = {
   // Backend endpoints are at /api/uploader/* (mounted in main.py)
   // Frontend uses reconciiBaseURL (https://devyaniuploadapi.corepeelers.com)
   // reconcii = "/devyani-service/api"
-  // All uploader endpoints use /devyani-service/api/uploader/* pattern
-  // Nginx routes /devyani-service/api/uploader/* → /api/uploader/* on backend
+  // Matching vikas_sir_config: upload uses /devyani-service/api/upload
+  // Nginx routes: /devyani-service/api/upload → /api/uploader/upload
+  // Other endpoints use /devyani-service/api/uploader/* pattern
   NEW_DATA_SOURCE_FIELDS: `${reconcii}/datasource`,
-  UPLOAD_FILE: `${reconcii}/uploader/upload`,
+  UPLOAD_FILE: `${reconcii}/upload`, // Matches vikas_sir_config
   ANALYZE_COLUMNS: `${reconcii}/uploader/analyze-columns`,
   VALIDATE_COLUMNS: `${reconcii}/uploader/validate-columns`,
   SAVE_COLUMN_MAPPINGS: `${reconcii}/uploader/save-column-mappings`,
