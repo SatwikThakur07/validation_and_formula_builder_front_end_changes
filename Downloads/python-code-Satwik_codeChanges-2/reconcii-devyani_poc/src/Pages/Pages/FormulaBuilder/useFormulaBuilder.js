@@ -182,6 +182,7 @@ const useFormulaBuilder = () => {
     try {
       setLoading(true);
       console.log("[FORMULA_BUILDER] Fetching datasets for tender:", tender);
+      console.log("[FORMULA_BUILDER] API endpoint:", apiEndpoints.GET_TENDER_WISE_TABLES_LIST);
       
       // Fetch table/column list for the selected tender using the API endpoint
       const response = await requestCallPost(apiEndpoints.GET_TENDER_WISE_TABLES_LIST, { tenders: [tender] });
@@ -189,6 +190,32 @@ const useFormulaBuilder = () => {
       console.log("[FORMULA_BUILDER] Full response:", JSON.stringify(response, null, 2));
       console.log("[FORMULA_BUILDER] Response status:", response?.status);
       console.log("[FORMULA_BUILDER] Response data:", response?.data);
+      
+      // Check if API call failed
+      if (!response) {
+        console.error("[FORMULA_BUILDER] No response received from API");
+        setDatasetOptions([]);
+        setAllColumns([]);
+        setColumnOptions([]);
+        setToastMessage({
+          message: "Failed to connect to server. Please check your connection and try again.",
+          type: "error",
+        });
+        return;
+      }
+      
+      if (!response.status) {
+        console.error("[FORMULA_BUILDER] API call failed:", response?.message);
+        const errorMsg = response?.message || "Failed to fetch datasets";
+        setDatasetOptions([]);
+        setAllColumns([]);
+        setColumnOptions([]);
+        setToastMessage({
+          message: typeof errorMsg === 'string' ? errorMsg : "Failed to load datasets. Please try again.",
+          type: "error",
+        });
+        return;
+      }
       
       // Handle different response formats
       let responseData = null;

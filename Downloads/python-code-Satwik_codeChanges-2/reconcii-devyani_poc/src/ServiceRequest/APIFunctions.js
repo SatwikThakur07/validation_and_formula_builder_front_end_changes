@@ -15,9 +15,15 @@ export async function requestCallPost(
     console.log("[requestCallPost] Data isEmpty:", !data || (typeof data === 'object' && Object.keys(data).length === 0));
   }
   
-  let headers = {
-    "Content-Type": "application/json",
-  };
+  // Detect if data is FormData - if so, don't set Content-Type (browser will set it with boundary)
+  const isFormData = data instanceof FormData;
+  
+  let headers = {};
+  // Only set Content-Type for non-FormData requests
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+  
   if (localStorage.getItem("ReconciiToken")) {
     headers = {
       ...headers,
@@ -29,6 +35,11 @@ export async function requestCallPost(
   // Don't send Authorization header for login endpoint
   if (apiName?.includes("login") || apiName === "/login" || apiName === "/api/auth/login") {
     delete headers.Authorization;
+  }
+  
+  // For FormData, ensure Content-Type is not manually set (let browser set it with boundary)
+  if (isFormData && headers["Content-Type"]) {
+    delete headers["Content-Type"];
   }
   
   if (apiName?.includes("generate-excel") || apiName?.includes("generate-receivable-receipt-excel")) {
