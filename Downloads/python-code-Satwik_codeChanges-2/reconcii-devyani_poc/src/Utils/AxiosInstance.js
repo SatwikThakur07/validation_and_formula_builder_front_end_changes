@@ -33,11 +33,15 @@ instance.interceptors.request.use((config) => {
     config.baseURL = ssoBaseURL;
   } 
   // Formula Builder endpoints (recologics) - use admin base URL
+  // These endpoints now use RECONCILIATION_SERVICE prefix
   else if (config?.url?.includes("/api/v1/recologics") || 
            config?.url?.includes("/api/v1/tenderList") ||
            config?.url?.includes("/api/v1/tenderWisetables") ||
            config?.url?.includes("/api/v1/datasource") ||
-           config?.url?.includes("/api/v1/recologics/findOldestEffectiveDate")) {
+           config?.url?.includes("/reconcii-devyani-service/api/v1/recologics") ||
+           config?.url?.includes("/reconcii-devyani-service/api/v1/tenderList") ||
+           config?.url?.includes("/reconcii-devyani-service/api/v1/tenderWisetables") ||
+           config?.url?.includes("/reconcii-devyani-service/api/v1/datasource")) {
     config.baseURL = reconciiAdminBaseURL;
   }
   // SSO endpoints

@@ -55,7 +55,7 @@ const reconciiAdminBaseURL = import.meta.env.VITE_ADMIN_API_BASE_URL || "https:/
 const sso = "/devyani-sso-service/api/v1";
 const reconcii = "/devyani-service/api";
 const activityURL = "/api/audit_log";
-const reconciliationNodeURL = "/api/reconciliation";
+const reconciliationNodeURL = "/api/node/reconciliation";
 const RECONCILIATION_SERVICE = "/reconcii-devyani-service";
 
 // Bercos URLS
@@ -166,6 +166,9 @@ const apiEndpoints = {
   GET_CITY_LIST_DATA: `${reconciliationNodeURL}/cities`,
   GET_STORE_LIST_DATA: `${reconciliationNodeURL}/stores`,
   GET_ASYNC_GENERATE_REPORT_DATA: `${reconciliationNodeURL}/generation-status`,
+  DOWNLOAD_POS_VS_TRM_DATA: `${reconciliationNodeURL}/posvstrm/pos-vs-trm-summary`,
+  DOWNLOAD_TRM_VS_MPR_DATA: `${reconciliationNodeURL}/trmvsmpr/generate-sheet/trm-vs-mpr-upi`,
+  DOWNLOAD_MPR_VS_BANK_DATA: `${reconciliationNodeURL}/mprvsbs/mpr-vs-bank-statement-upi`,
 
   //!DOWNLOAD API'S FOR TABLE
   UNRECONCILED: `${RECONCILIATION_SERVICE}${PUBLIC}${DASHBOARD}/unreconciled/download`,
@@ -211,17 +214,16 @@ const apiEndpoints = {
   // GET_ASYNC_GENERATE_REPORT_DATA: `${RECONCILIATION_SERVICE}/public/generated-reports/getAll`,
 
   // New URLs
-  // Note: recologics endpoints are registered at root level in backend (no /api/reconciliation prefix)
   GET_TENDER_LIST: `${RECONCILIATION_SERVICE}/api/v1/tenderList`,
   GET_TENDER_WISE_TABLES_LIST: `${RECONCILIATION_SERVICE}/api/v1/tenderWisetables`,
-  SAVE_ALL_RECO_LOGICS: `/api/v1/recologics/save`, // Root level endpoint (no RECONCILIATION_SERVICE prefix)
-  UPDATE_ALL_RECO_LOGICS: `/api/v1/recologics/update`, // Root level endpoint
-  GET_ALL_RECO_LOGICS: `/api/v1/recologics/getAll`, // Root level endpoint
-  GET_RECO_LOGICS_BY_TOPIC: `/api/v1/recologics/get`, // Root level endpoint
+  SAVE_ALL_RECO_LOGICS: `${RECONCILIATION_SERVICE}/api/v1/recologics/save`,
+  UPDATE_ALL_RECO_LOGICS: `${RECONCILIATION_SERVICE}/api/v1/recologics/update`,
+  GET_ALL_RECO_LOGICS: `${RECONCILIATION_SERVICE}/api/v1/recologics/getAll`,
+  GET_RECO_LOGICS_BY_TOPIC: `${RECONCILIATION_SERVICE}/api/v1/recologics/get`,
   GET_ALL_DATA_SOURCE_FOR_MAPPING: `${RECONCILIATION_SERVICE}/api/v1/datasource`,
   EXCEL_DB_COLUMN_MAPPING_BY_DATASOURCE: `${RECONCILIATION_SERVICE}/api/ve1/customisedfields/getExcelDbColumMappingByDataSource/`,
   UPDATE_EXCEL_DB_COLUMN_MAPPING_BY_DATASOURCE: `${RECONCILIATION_SERVICE}/api/ve1/customisedfields/updateExcelDbColumMapping`,
-  FIND_OLDEST_EFFECTIVE_DATE: `/api/v1/recologics/findOldestEffectiveDate`, // Root level endpoint
+  FIND_OLDEST_EFFECTIVE_DATE: `${RECONCILIATION_SERVICE}/api/v1/recologics/findOldestEffectiveDate`,
 
   SAVE_AUDIT_LOG: `${RECONCILIATION_SERVICE}/api/v2/auditlog/save`,
 
