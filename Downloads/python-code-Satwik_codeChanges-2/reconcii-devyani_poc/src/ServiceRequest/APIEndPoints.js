@@ -228,16 +228,18 @@ const apiEndpoints = {
   SAVE_AUDIT_LOG: `${RECONCILIATION_SERVICE}/api/v2/auditlog/save`,
 
   // Upload URLs
-  // Note: These endpoints are on the Python backend at /api/uploader/*
-  // The staging server routes /devyani-service/api/* to /api/* via reverse proxy
+  // Backend endpoints are at /api/uploader/* (mounted in main.py)
+  // Frontend uses reconciiBaseURL (https://devyaniuploadapi.corepeelers.com)
+  // reconcii = "/devyani-service/api"
+  // So we need: /devyani-service/api/uploader/validate-columns
+  // Staging server routes /devyani-service/api/* to Python backend /api/*
+  // Therefore: /devyani-service/api/uploader/* → /api/uploader/* (correct!)
   NEW_DATA_SOURCE_FIELDS: `${reconcii}/datasource`,
   UPLOAD_FILE: `${reconcii}/upload`,
   ANALYZE_COLUMNS: `${reconcii}/analyze-columns`,
-  // Backend endpoint is /api/uploader/validate-columns, but staging routes /devyani-service/api/* to /api/*
-  // So we need to use /devyani-service/api/uploader/validate-columns
-  VALIDATE_COLUMNS: `/api/uploader/validate-columns`,
-  SAVE_COLUMN_MAPPINGS: `/api/uploader/save-column-mappings`,
-  UPLOAD_STATUS: `/api/uploader/status`, // Get upload status and mappings
+  VALIDATE_COLUMNS: `${reconcii}/uploader/validate-columns`,
+  SAVE_COLUMN_MAPPINGS: `${reconcii}/uploader/save-column-mappings`,
+  UPLOAD_STATUS: `${reconcii}/uploader/status`, // Get upload status and mappings
 
   ACTIVITY_CREATE: `${activityURL}/create`,
   ACTIVITY_SEARCH: `${activityURL}/list`,
