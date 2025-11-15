@@ -38,11 +38,13 @@
 
 // Devyani URLS
 // Devyani URLS - STAGING
+// URLs can be configured via environment variables (VITE_*)
+// If not set, these defaults will be used
 
-const baseURL = "https://devyanirecoapi.corepeelers.com";
-const ssoBaseURL = "https://devyani.corepeelers.com";
-const reconciiBaseURL = "https://devyaniuploadapi.corepeelers.com";
-const reconciiAdminBaseURL = "https://devyaniadminapi.corepeelers.com";
+const baseURL = import.meta.env.VITE_RECO_API_BASE_URL || "https://devyanirecoapi.corepeelers.com";
+const ssoBaseURL = import.meta.env.VITE_SSO_API_BASE_URL || "https://devyanissoapi.corepeelers.com";
+const reconciiBaseURL = import.meta.env.VITE_UPLOAD_API_BASE_URL || "https://devyaniuploadapi.corepeelers.com";
+const reconciiAdminBaseURL = import.meta.env.VITE_ADMIN_API_BASE_URL || "https://devyaniadminapi.corepeelers.com";
 
 // LOCAL DEVELOPMENT (commented out)
 // const baseURL = "http://localhost:8034";
