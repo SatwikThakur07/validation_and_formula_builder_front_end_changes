@@ -47,7 +47,13 @@ instance.interceptors.request.use((config) => {
     return config;
   }
   
-  // Reconciliation service endpoints (upload, validate, etc.)
+  // Uploader endpoints (validate-columns, save-column-mappings, etc.) - use upload base URL
+  if (url.includes("/api/uploader/")) {
+    config.baseURL = reconciiBaseURL;
+    return config;
+  }
+  
+  // Reconciliation service endpoints (upload, analyze-columns, etc.)
   if (url.includes(reconcii)) {
     config.baseURL = reconciiBaseURL;
     return config;
