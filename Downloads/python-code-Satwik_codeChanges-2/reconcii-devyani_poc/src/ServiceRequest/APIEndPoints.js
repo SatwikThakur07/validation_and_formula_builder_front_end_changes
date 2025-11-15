@@ -37,26 +37,31 @@
 // const RECONCILIATION_SERVICE = "/reconcii-demo-service";
 
 // Devyani URLS
-// Devyani URLS - STAGING
-// URLs can be configured via environment variables (VITE_*)
-// If not set, these defaults will be used
+// Auto-detect localhost vs staging
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-const baseURL = import.meta.env.VITE_RECO_API_BASE_URL || "https://devyanirecoapi.corepeelers.com";
-const ssoBaseURL = import.meta.env.VITE_SSO_API_BASE_URL || "https://devyanissoapi.corepeelers.com";
-const reconciiBaseURL = import.meta.env.VITE_UPLOAD_API_BASE_URL || "https://devyaniuploadapi.corepeelers.com";
-const reconciiAdminBaseURL = import.meta.env.VITE_ADMIN_API_BASE_URL || "https://devyaniadminapi.corepeelers.com";
+const baseURL = isLocalhost 
+  ? "http://localhost:8034"
+  : (import.meta.env.VITE_RECO_API_BASE_URL || "https://devyanirecoapi.corepeelers.com");
+  
+const ssoBaseURL = isLocalhost
+  ? "http://localhost:8034"
+  : (import.meta.env.VITE_SSO_API_BASE_URL || "https://devyanissoapi.corepeelers.com");
+  
+const reconciiBaseURL = isLocalhost
+  ? "http://localhost:8034"
+  : (import.meta.env.VITE_UPLOAD_API_BASE_URL || "https://devyaniuploadapi.corepeelers.com");
+  
+const reconciiAdminBaseURL = isLocalhost
+  ? "http://localhost:8034"
+  : (import.meta.env.VITE_ADMIN_API_BASE_URL || "https://devyaniadminapi.corepeelers.com");
 
-// LOCAL DEVELOPMENT (commented out)
-// const baseURL = "http://localhost:8034";
-// const ssoBaseURL = "http://localhost:8034";
-// const reconciiBaseURL = "http://localhost:8034";
-// const reconciiAdminBaseURL = "http://localhost:8034";
-
-const sso = "/devyani-sso-service/api/v1";
-const reconcii = "/devyani-service/api";
+// Path prefixes - different for localhost vs staging
+const sso = isLocalhost ? "/api/auth" : "/devyani-sso-service/api/v1";
+const reconcii = isLocalhost ? "/api" : "/devyani-service/api";
 const activityURL = "/api/audit_log";
 const reconciliationNodeURL = "/api/node/reconciliation";
-const RECONCILIATION_SERVICE = "/reconcii-devyani-service";
+const RECONCILIATION_SERVICE = isLocalhost ? "/api/reconciliation" : "/reconcii-devyani-service";
 
 // Bercos URLS
 
@@ -213,14 +218,17 @@ const apiEndpoints = {
   DOWNLOAD_ASYNC_GENERATE_REPORT_DATA: `${RECONCILIATION_SERVICE}/public/generated-reports/download`,
   // GET_ASYNC_GENERATE_REPORT_DATA: `${RECONCILIATION_SERVICE}/public/generated-reports/getAll`,
 
-  // New URLs
-  GET_TENDER_LIST: `${RECONCILIATION_SERVICE}/api/v1/tenderList`,
-  GET_TENDER_WISE_TABLES_LIST: `${RECONCILIATION_SERVICE}/api/v1/tenderWisetables`,
-  SAVE_ALL_RECO_LOGICS: `${RECONCILIATION_SERVICE}/api/v1/recologics/save`,
-  UPDATE_ALL_RECO_LOGICS: `${RECONCILIATION_SERVICE}/api/v1/recologics/update`,
-  GET_ALL_RECO_LOGICS: `${RECONCILIATION_SERVICE}/api/v1/recologics/getAll`,
-  GET_RECO_LOGICS_BY_TOPIC: `${RECONCILIATION_SERVICE}/api/v1/recologics/get`,
-  GET_ALL_DATA_SOURCE_FOR_MAPPING: `${RECONCILIATION_SERVICE}/api/v1/datasource`,
+  // New URLs - Formula Builder endpoints
+  // Backend routes are mounted at /api/reconciliation, so endpoints are:
+  // /api/reconciliation/api/v1/tenderWisetables (for localhost)
+  // /reconcii-devyani-service/api/v1/tenderWisetables (for staging)
+  GET_TENDER_LIST: isLocalhost ? "/api/reconciliation/api/v1/tenderList" : `${RECONCILIATION_SERVICE}/api/v1/tenderList`,
+  GET_TENDER_WISE_TABLES_LIST: isLocalhost ? "/api/reconciliation/api/v1/tenderWisetables" : `${RECONCILIATION_SERVICE}/api/v1/tenderWisetables`,
+  SAVE_ALL_RECO_LOGICS: isLocalhost ? "/api/reconciliation/api/v1/recologics/save" : `${RECONCILIATION_SERVICE}/api/v1/recologics/save`,
+  UPDATE_ALL_RECO_LOGICS: isLocalhost ? "/api/reconciliation/api/v1/recologics/update" : `${RECONCILIATION_SERVICE}/api/v1/recologics/update`,
+  GET_ALL_RECO_LOGICS: isLocalhost ? "/api/reconciliation/api/v1/recologics/getAll" : `${RECONCILIATION_SERVICE}/api/v1/recologics/getAll`,
+  GET_RECO_LOGICS_BY_TOPIC: isLocalhost ? "/api/reconciliation/api/v1/recologics/get" : `${RECONCILIATION_SERVICE}/api/v1/recologics/get`,
+  GET_ALL_DATA_SOURCE_FOR_MAPPING: isLocalhost ? "/api/reconciliation/api/v1/datasource" : `${RECONCILIATION_SERVICE}/api/v1/datasource`,
   EXCEL_DB_COLUMN_MAPPING_BY_DATASOURCE: `${RECONCILIATION_SERVICE}/api/ve1/customisedfields/getExcelDbColumMappingByDataSource/`,
   UPDATE_EXCEL_DB_COLUMN_MAPPING_BY_DATASOURCE: `${RECONCILIATION_SERVICE}/api/ve1/customisedfields/updateExcelDbColumMapping`,
   FIND_OLDEST_EFFECTIVE_DATE: `${RECONCILIATION_SERVICE}/api/v1/recologics/findOldestEffectiveDate`,
@@ -228,18 +236,14 @@ const apiEndpoints = {
   SAVE_AUDIT_LOG: `${RECONCILIATION_SERVICE}/api/v2/auditlog/save`,
 
   // Upload URLs
-  // Backend endpoints are at /api/uploader/* (mounted in main.py)
-  // Frontend uses reconciiBaseURL (https://devyaniuploadapi.corepeelers.com)
-  // reconcii = "/devyani-service/api"
-  // Matching vikas_sir_config: upload uses /devyani-service/api/upload
-  // Nginx routes: /devyani-service/api/upload → /api/uploader/upload
-  // Other endpoints use /devyani-service/api/uploader/* pattern
-  NEW_DATA_SOURCE_FIELDS: `${reconcii}/datasource`,
-  UPLOAD_FILE: `${reconcii}/upload`, // Matches vikas_sir_config
-  ANALYZE_COLUMNS: `${reconcii}/uploader/analyze-columns`,
-  VALIDATE_COLUMNS: `${reconcii}/uploader/validate-columns`,
-  SAVE_COLUMN_MAPPINGS: `${reconcii}/uploader/save-column-mappings`,
-  UPLOAD_STATUS: `${reconcii}/uploader/status`, // Get upload status and mappings
+  // For localhost: use /api/uploader/* directly (backend routes)
+  // For staging: use /devyani-service/api/uploader/* (nginx routes to /api/uploader/*)
+  NEW_DATA_SOURCE_FIELDS: isLocalhost ? "/api/uploader/datasource" : `${reconcii}/datasource`,
+  UPLOAD_FILE: isLocalhost ? "/api/uploader/upload" : `${reconcii}/upload`,
+  ANALYZE_COLUMNS: isLocalhost ? "/api/uploader/analyze-columns" : `${reconcii}/uploader/analyze-columns`,
+  VALIDATE_COLUMNS: isLocalhost ? "/api/uploader/validate-columns" : `${reconcii}/uploader/validate-columns`,
+  SAVE_COLUMN_MAPPINGS: isLocalhost ? "/api/uploader/save-column-mappings" : `${reconcii}/uploader/save-column-mappings`,
+  UPLOAD_STATUS: isLocalhost ? "/api/uploader/status" : `${reconcii}/uploader/status`,
 
   ACTIVITY_CREATE: `${activityURL}/create`,
   ACTIVITY_SEARCH: `${activityURL}/list`,

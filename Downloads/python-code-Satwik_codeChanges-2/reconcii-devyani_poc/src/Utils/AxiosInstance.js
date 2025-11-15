@@ -36,14 +36,27 @@ instance.interceptors.request.use((config) => {
     return config;
   }
   
-  // Formula Builder endpoints (recologics) - use admin base URL
-  // These endpoints now use RECONCILIATION_SERVICE prefix
-  if (url.includes("/api/v1/recologics") || 
+  // Formula Builder endpoints (recologics) - use baseURL for localhost, admin base URL for staging
+  // These endpoints use /api/reconciliation/api/v1/ prefix for localhost
+  if (url.includes("/api/reconciliation/api/v1/") || 
+      url.includes("/api/v1/recologics") || 
       url.includes("/api/v1/tenderList") ||
       url.includes("/api/v1/tenderWisetables") ||
       url.includes("/api/v1/datasource") ||
       url.includes("/reconcii-devyani-service")) {
-    config.baseURL = reconciiAdminBaseURL;
+    // For localhost endpoints (/api/reconciliation/api/v1/), use baseURL
+    // For staging endpoints (/reconcii-devyani-service), use admin base URL
+    if (url.includes("/api/reconciliation/api/v1/")) {
+      config.baseURL = baseURL; // localhost:8034 for localhost
+    } else {
+      config.baseURL = reconciiAdminBaseURL; // staging URL
+    }
+    return config;
+  }
+  
+  // Uploader endpoints - use upload base URL
+  if (url.includes("/api/uploader/")) {
+    config.baseURL = reconciiBaseURL;
     return config;
   }
   
