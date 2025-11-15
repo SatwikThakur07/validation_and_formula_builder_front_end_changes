@@ -25,41 +25,51 @@ export const handleError = ({ message, data, status }) => {
   return Promise.reject({ message, data, status });
 };
 
-// Intercept request to set dynamic baseURL
+// Intercept request to set dynamic baseURL (optimized for performance)
 instance.interceptors.request.use((config) => {
-  // If a specific baseURL is passed, use it; otherwise, default to the instance's baseURL
-  // SSO endpoints (including login) - use SSO base URL
-  if (config?.url?.includes(sso)) {
+  const url = config?.url || "";
+  
+  // SSO endpoints (including login) - use SSO base URL (highest priority)
+  if (url.includes(sso)) {
     config.baseURL = ssoBaseURL;
-  } 
+    return config;
+  }
+  
   // Formula Builder endpoints (recologics) - use admin base URL
   // These endpoints now use RECONCILIATION_SERVICE prefix
-  else if (config?.url?.includes("/api/v1/recologics") || 
-           config?.url?.includes("/api/v1/tenderList") ||
-           config?.url?.includes("/api/v1/tenderWisetables") ||
-           config?.url?.includes("/api/v1/datasource") ||
-           config?.url?.includes("/reconcii-devyani-service/api/v1/recologics") ||
-           config?.url?.includes("/reconcii-devyani-service/api/v1/tenderList") ||
-           config?.url?.includes("/reconcii-devyani-service/api/v1/tenderWisetables") ||
-           config?.url?.includes("/reconcii-devyani-service/api/v1/datasource")) {
+  if (url.includes("/api/v1/recologics") || 
+      url.includes("/api/v1/tenderList") ||
+      url.includes("/api/v1/tenderWisetables") ||
+      url.includes("/api/v1/datasource") ||
+      url.includes("/reconcii-devyani-service")) {
     config.baseURL = reconciiAdminBaseURL;
+    return config;
   }
-  // Reconciliation service endpoints
-  else if (config?.url?.includes(reconcii)) {
+  
+  // Reconciliation service endpoints (upload, validate, etc.)
+  if (url.includes(reconcii)) {
     config.baseURL = reconciiBaseURL;
+    return config;
   }
+  
   // Activity/audit log endpoints
-  else if (config?.url?.includes(activityURL)) {
+  if (url.includes(activityURL)) {
     config.baseURL = reconciiAdminBaseURL;
+    return config;
   }
+  
   // Node password URLs
-  else if (config?.url?.includes(nodePasswordUrls)) {
+  if (url.includes(nodePasswordUrls)) {
     config.baseURL = reconciiAdminBaseURL;
+    return config;
   }
+  
   // Reconciliation node URLs
-  else if (config?.url?.includes(reconciliationNodeURL)) {
+  if (url.includes(reconciliationNodeURL)) {
     config.baseURL = reconciiAdminBaseURL;
+    return config;
   }
+  
   return config;
 });
 

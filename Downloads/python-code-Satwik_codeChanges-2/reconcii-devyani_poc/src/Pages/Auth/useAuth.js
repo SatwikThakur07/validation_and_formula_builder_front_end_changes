@@ -113,13 +113,13 @@ const useAuth = () => {
           return;
         }
         
-        // Handle different response formats:
-        // Format 1: {access_token, token_type, user} (direct from FastAPI)
-        // Format 2: {data: {access_token, user}} (wrapped)
+        // Handle different response formats (compatible with vikas_sir_config):
+        // Format 1: {data: {access_token, user}} (vikas_sir_config format - wrapped)
+        // Format 2: {access_token, token_type, user} (direct from FastAPI)
         // Format 3: {access_token, user} (simplified)
-        const accessToken = apiData?.access_token || apiData?.data?.access_token;
-        const refreshToken = apiData?.refresh_token || apiData?.data?.refresh_token;
-        const userPayload = apiData?.user || apiData?.data?.user || apiData?.data || {};
+        const accessToken = apiData?.data?.access_token || apiData?.access_token;
+        const refreshToken = apiData?.data?.refresh_token || apiData?.refresh_token;
+        const userPayload = apiData?.data?.user || apiData?.data || apiData?.user || {};
         
         console.log("[LOGIN] Access Token:", accessToken ? "Found" : "Missing");
         console.log("[LOGIN] User Payload:", userPayload);
