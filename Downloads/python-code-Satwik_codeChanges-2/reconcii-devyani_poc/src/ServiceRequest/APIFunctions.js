@@ -30,10 +30,18 @@ export async function requestCallPost(
       Authorization: "Bearer " + localStorage.getItem("ReconciiToken"),
     };
   }
-  headers = { ...headers, ...additionalHeaders };
+  
+  // Merge additional headers, but for FormData, don't override Content-Type or Accept
+  if (isFormData) {
+    // For FormData, remove Accept and Content-Type from additionalHeaders if present
+    const { Accept, "Content-Type": contentType, ...restHeaders } = additionalHeaders;
+    headers = { ...headers, ...restHeaders };
+  } else {
+    headers = { ...headers, ...additionalHeaders };
+  }
   
   // Don't send Authorization header for login endpoint
-  if (apiName?.includes("login") || apiName === "/login" || apiName === "/api/auth/login") {
+  if (apiName?.includes("login") || apiName === "/login" || apiName === "/api/auth/login" || apiName?.includes("auth/access/token")) {
     delete headers.Authorization;
   }
   

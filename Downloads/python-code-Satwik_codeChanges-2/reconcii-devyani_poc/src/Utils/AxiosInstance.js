@@ -17,7 +17,8 @@ const instance = axios.create({
   headers: {
     langId: 1,
     Accept: "application/json",
-    "Content-Type": "application/json",
+    // Don't set Content-Type here - let it be set per request
+    // FormData needs browser to set Content-Type with boundary
   },
 });
 

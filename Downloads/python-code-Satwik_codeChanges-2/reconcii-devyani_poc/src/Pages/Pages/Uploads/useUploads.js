@@ -491,9 +491,8 @@ const useUploads = () => {
       console.log(`[useUploads] 📤 Starting upload: ${filesArray.length} file(s), ${(totalSize / 1024 / 1024).toFixed(2)} MB total`);
       console.log(`[useUploads] Datasource: ${values.payment}, Client: ${values.client}`);
 
+      // For FormData, don't set Accept header - let browser handle it
       const customConfig = {
-        langId: 1,
-        Accept: "application/json",
         timeout: UPLOAD_TIMEOUT,
       };
 
@@ -502,7 +501,8 @@ const useUploads = () => {
         return await requestCallPost(
           `${apiEndpoints.UPLOAD_FILE}?datasource=${encodeURIComponent(values.payment)}&client=${encodeURIComponent(values.client)}`,
           formData,
-          customConfig
+          {}, // No additional headers for FormData
+          customConfig // Pass as topLevelConfig
         );
       });
       
@@ -953,9 +953,8 @@ const useUploads = () => {
         client: values.client
       });
 
+      // For FormData, don't set Accept header - let browser handle it
       const customConfig = {
-        langId: 1,
-        Accept: "application/json",
         timeout: 60000, // 60 seconds for validation
       };
 
@@ -964,7 +963,8 @@ const useUploads = () => {
         return await requestCallPost(
           apiEndpoints.VALIDATE_COLUMNS,
           formData,
-          customConfig
+          {}, // No additional headers for FormData
+          customConfig // Pass as topLevelConfig
         );
       });
 
