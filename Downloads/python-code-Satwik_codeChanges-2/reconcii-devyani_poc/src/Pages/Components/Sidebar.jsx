@@ -102,7 +102,14 @@ const Sidebar = () => {
       if (!Array.isArray(allowedModules) || allowedModulesArray?.length === 0) {
         setMenuArray(MANAGER_SIDEBAR);
       } else {
-        setMenuArray(allowedModulesArray);
+        // Always include Formula Builder (db_id: 12) even if not in allowedModules
+        // This ensures Formula Builder is always accessible
+        const formulaBuilderItem = MANAGER_SIDEBAR.find(item => item.db_id === 12);
+        const finalMenuArray = [...allowedModulesArray];
+        if (formulaBuilderItem && !finalMenuArray.find(item => item.db_id === 12)) {
+          finalMenuArray.push(formulaBuilderItem);
+        }
+        setMenuArray(finalMenuArray);
       }
     } catch (e) {
       // On parse errors or missing localStorage key, fall back to full sidebar
