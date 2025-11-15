@@ -181,48 +181,124 @@ const useFormulaBuilder = () => {
   const fetchDatasetColumns = async (tender) => {
     try {
       setLoading(true);
+      console.log("[FORMULA_BUILDER] Fetching datasets for tender:", tender);
+      
       // Fetch table/column list for the selected tender using the API endpoint
       const response = await requestCallPost(apiEndpoints.GET_TENDER_WISE_TABLES_LIST, { tenders: [tender] });
-      if (response && response.status && response.data?.data) {
+      
+      console.log("[FORMULA_BUILDER] Full response:", JSON.stringify(response, null, 2));
+      console.log("[FORMULA_BUILDER] Response status:", response?.status);
+      console.log("[FORMULA_BUILDER] Response data:", response?.data);
+      
+      // Handle different response formats
+      let responseData = null;
+      
+      if (response && response.status) {
+        // Format 1: response.data.data (nested)
+        if (response.data?.data && Array.isArray(response.data.data)) {
+          responseData = response.data.data;
+          console.log("[FORMULA_BUILDER] Using response.data.data format");
+        }
+        // Format 2: response.data (direct array)
+        else if (Array.isArray(response.data)) {
+          responseData = response.data;
+          console.log("[FORMULA_BUILDER] Using response.data format (direct array)");
+        }
+        // Format 3: response.data.dataSourceWiseColumns (single tender)
+        else if (response.data?.dataSourceWiseColumns && Array.isArray(response.data.dataSourceWiseColumns)) {
+          responseData = [{
+            tender: tender,
+            dataSourceWiseColumns: response.data.dataSourceWiseColumns
+          }];
+          console.log("[FORMULA_BUILDER] Using response.data.dataSourceWiseColumns format");
+        }
+        // Format 4: response.data wrapped in another object
+        else if (response.data?.data && typeof response.data.data === 'object') {
+          responseData = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
+          console.log("[FORMULA_BUILDER] Using wrapped response.data.data format");
+        }
+      }
+      
+      if (responseData && Array.isArray(responseData) && responseData.length > 0) {
         const datasets = [];
         const allColumns = [];
         
-        response.data.data.forEach((tenderData) => {
-          tenderData?.dataSourceWiseColumns?.forEach((dataSource) => {
-            const datasetName = dataSource?.dataSourceName || dataSource?.dataset_name;
-            if (datasetName) {
-              datasets.push({
-                value: datasetName,
-                label: datasetName,
-                tableName: dataSource?.tableName,
-              });
-              
-              // Collect columns for this dataset
-              if (dataSource?.columns && Array.isArray(dataSource.columns)) {
-                dataSource.columns.forEach((col) => {
-                  const colName = col?.excelColumnName || col?.columnName || col;
-                  allColumns.push({
-                    value: colName,
-                    label: colName,
-                    dataset: datasetName,
-                    tableColumn: col?.dbColumnName || colName,
-                  });
+        responseData.forEach((tenderData) => {
+          const dataSourceColumns = tenderData?.dataSourceWiseColumns || [];
+          
+          if (Array.isArray(dataSourceColumns) && dataSourceColumns.length > 0) {
+            dataSourceColumns.forEach((dataSource) => {
+              const datasetName = dataSource?.dataSourceName || dataSource?.dataset_name || dataSource?.name;
+              if (datasetName) {
+                datasets.push({
+                  value: datasetName,
+                  label: datasetName,
+                  tableName: dataSource?.tableName || dataSource?.table_name,
                 });
+                
+                // Collect columns for this dataset
+                const columns = dataSource?.columns || dataSource?.columnList || [];
+                if (Array.isArray(columns) && columns.length > 0) {
+                  columns.forEach((col) => {
+                    const colName = col?.excelColumnName || col?.columnName || col?.name || col;
+                    if (colName) {
+                      allColumns.push({
+                        value: colName,
+                        label: colName,
+                        dataset: datasetName,
+                        tableColumn: col?.dbColumnName || col?.db_column_name || colName,
+                      });
+                    }
+                  });
+                }
               }
-            }
-          });
+            });
+          }
         });
         
-        setDatasetOptions(datasets);
-        // Store all columns for filtering later
-        setAllColumns(allColumns);
-        // Initially show all columns or empty
+        console.log("[FORMULA_BUILDER] Extracted datasets:", datasets.length);
+        console.log("[FORMULA_BUILDER] Extracted columns:", allColumns.length);
+        
+        if (datasets.length > 0) {
+          setDatasetOptions(datasets);
+          setAllColumns(allColumns);
+          setColumnOptions([]);
+          setToastMessage({
+            message: `Loaded ${datasets.length} dataset(s) with ${allColumns.length} column(s)`,
+            type: "success",
+          });
+        } else {
+          console.warn("[FORMULA_BUILDER] No datasets found in response");
+          setDatasetOptions([]);
+          setAllColumns([]);
+          setColumnOptions([]);
+          setToastMessage({
+            message: "No datasets found for this tender. Please check if the tender has datasets configured.",
+            type: "warning",
+          });
+        }
+      } else {
+        console.warn("[FORMULA_BUILDER] Invalid or empty response data");
+        setDatasetOptions([]);
+        setAllColumns([]);
         setColumnOptions([]);
+        setToastMessage({
+          message: "No datasets available. Please check if the tender has datasets configured.",
+          type: "warning",
+        });
       }
     } catch (error) {
       console.error("[FORMULA_BUILDER] Error fetching datasets:", error);
+      console.error("[FORMULA_BUILDER] Error details:", {
+        message: error?.message,
+        response: error?.response?.data,
+        status: error?.response?.status
+      });
+      setDatasetOptions([]);
+      setAllColumns([]);
+      setColumnOptions([]);
       setToastMessage({
-        message: "Failed to load datasets",
+        message: error?.response?.data?.detail || error?.message || "Failed to load datasets. Please try again.",
         type: "error",
       });
     } finally {
