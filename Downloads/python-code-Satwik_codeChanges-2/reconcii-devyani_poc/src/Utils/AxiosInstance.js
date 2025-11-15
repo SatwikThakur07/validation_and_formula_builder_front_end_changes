@@ -28,8 +28,8 @@ export const handleError = ({ message, data, status }) => {
 // Intercept request to set dynamic baseURL
 instance.interceptors.request.use((config) => {
   // If a specific baseURL is passed, use it; otherwise, default to the instance's baseURL
-  // Check for login endpoint first (it's at /login on devyani.corepeelers.com)
-  if (config?.url === "/login" || config?.url?.endsWith("/login")) {
+  // SSO endpoints (including login) - use SSO base URL
+  if (config?.url?.includes(sso)) {
     config.baseURL = ssoBaseURL;
   } 
   // Formula Builder endpoints (recologics) - use admin base URL
@@ -43,10 +43,6 @@ instance.interceptors.request.use((config) => {
            config?.url?.includes("/reconcii-devyani-service/api/v1/tenderWisetables") ||
            config?.url?.includes("/reconcii-devyani-service/api/v1/datasource")) {
     config.baseURL = reconciiAdminBaseURL;
-  }
-  // SSO endpoints
-  else if (config?.url?.includes(sso)) {
-    config.baseURL = ssoBaseURL;
   }
   // Reconciliation service endpoints
   else if (config?.url?.includes(reconcii)) {
