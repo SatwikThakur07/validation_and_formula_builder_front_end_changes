@@ -228,7 +228,7 @@ const apiEndpoints = {
   // /reconcii-devyani-service/api/v1/tenderWisetables (for staging)
   GET_TENDER_LIST: isLocalhost ? "/api/reconciliation/api/v1/tenderList" : `${RECONCILIATION_SERVICE}/api/v1/tenderList`,
   GET_TENDER_WISE_TABLES_LIST: isLocalhost ? "/api/reconciliation/api/v1/tenderWisetables" : `${RECONCILIATION_SERVICE}/api/v1/tenderWisetables`,
-  SAVE_ALL_RECO_LOGICS: isLocalhost ? "/api/reconciliation/api/v1/recologics/save" : `${RECONCILIATION_SERVICE}/api/v1/recologics/save`,
+  SAVE_ALL_RECO_LOGICS: isLocalhost ? "/api/v1/recologics/save" : `${RECONCILIATION_SERVICE}/api/v1/recologics/save`,
   UPDATE_ALL_RECO_LOGICS: isLocalhost ? "/api/reconciliation/api/v1/recologics/update" : `${RECONCILIATION_SERVICE}/api/v1/recologics/update`,
   GET_ALL_RECO_LOGICS: isLocalhost ? "/api/reconciliation/api/v1/recologics/getAll" : `${RECONCILIATION_SERVICE}/api/v1/recologics/getAll`,
   GET_RECO_LOGICS_BY_TOPIC: isLocalhost ? "/api/reconciliation/api/v1/recologics/get" : `${RECONCILIATION_SERVICE}/api/v1/recologics/get`,
