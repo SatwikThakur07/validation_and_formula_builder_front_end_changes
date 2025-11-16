@@ -31,7 +31,9 @@ instance.interceptors.request.use((config) => {
   const url = config?.url || "";
   
   // SSO endpoints (including login) - use SSO base URL (highest priority)
-  if (url.includes(sso)) {
+  // For localhost: /api/auth/login goes to baseURL (localhost:8034)
+  // For staging: /devyani-sso-service/* goes to ssoBaseURL
+  if (url.includes("/api/auth/login") || url.includes(sso)) {
     config.baseURL = ssoBaseURL;
     return config;
   }

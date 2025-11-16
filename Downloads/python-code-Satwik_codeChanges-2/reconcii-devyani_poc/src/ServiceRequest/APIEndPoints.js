@@ -57,6 +57,8 @@ const reconciiAdminBaseURL = isLocalhost
   : (import.meta.env.VITE_ADMIN_API_BASE_URL || "https://devyaniadminapi.corepeelers.com");
 
 // Path prefixes - different for localhost vs staging
+// For localhost: auth router is at /api/auth, so login is /api/auth/login
+// For staging: SSO service is at /devyani-sso-service/api/v1, so login is /devyani-sso-service/api/v1/auth/access/token
 const sso = isLocalhost ? "/api/auth" : "/devyani-sso-service/api/v1";
 const reconcii = isLocalhost ? "/api" : "/devyani-service/api";
 const activityURL = "/api/audit_log";
@@ -102,8 +104,10 @@ const CUSTOM = "/custom";
 
 const apiEndpoints = {
   // !AUTH --- DO NOT TOUCH
-  // Login endpoint: https://devyanissoapi.corepeelers.com/devyani-sso-service/api/v1/auth/access/token
-  ACCESS_TOKEN: `${sso}${AUTH}/access/token`,
+  // Login endpoint: 
+  // - Localhost: /api/auth/login (auth router mounted at /api/auth)
+  // - Staging: /devyani-sso-service/api/v1/auth/access/token
+  ACCESS_TOKEN: isLocalhost ? "/api/auth/login" : `${sso}${AUTH}/access/token`,
   ACCESS_CORS: `${sso}${AUTH}/access/cors`,
 
   REFRESH_TOKEN: `${sso}${AUTH}/refresh/token`,
