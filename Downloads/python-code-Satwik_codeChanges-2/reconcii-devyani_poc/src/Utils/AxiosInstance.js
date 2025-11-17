@@ -44,22 +44,19 @@ instance.interceptors.request.use((config) => {
   // Formula Builder endpoints (recologics) - use baseURL for localhost, upload base URL for staging
   // For localhost: /api/reconciliation/api/v1/* (Python backend on localhost:8034)
   // For staging: /devyani-service/api/reconciliation/api/v1/* (Python backend on upload API)
-  if (url.includes("/api/reconciliation/api/v1/") || 
-      url.includes("/devyani-service/api/reconciliation/api/v1/") ||
-      url.includes("/reconciliation/api/v1/") ||
+  // Check for reconciliation API v1 endpoints first
+  if (url.includes("/reconciliation/api/v1/") || 
       url.includes("/api/v1/recologics") || 
       url.includes("/api/v1/tenderList") ||
       url.includes("/api/v1/tenderWisetables") ||
-      url.includes("/api/v1/datasource")) {
+      url.includes("/api/v1/datasource") ||
+      url.includes("/api/v1/recologics/findOldestEffectiveDate")) {
     // Localhost endpoints use Python backend on baseURL
-    if (isLocalhost && (url.includes("/api/reconciliation/api/v1/") || url.includes("/api/v1/"))) {
+    if (isLocalhost) {
       config.baseURL = baseURL; // localhost:8034 for localhost
-    } else if (url.includes("/devyani-service/api/reconciliation/api/v1/") || url.includes("/reconciliation/api/v1/")) {
+    } else {
       // Staging endpoints use Python backend on upload API
       config.baseURL = reconciiBaseURL; // https://devyaniuploadapi.corepeelers.com
-    } else if (url.includes("/api/reconciliation/api/v1/")) {
-      // Fallback for staging - use upload base URL
-      config.baseURL = reconciiBaseURL;
     }
     return config;
   }
@@ -77,22 +74,13 @@ instance.interceptors.request.use((config) => {
   // Uploader endpoints - check for staging pattern first, then localhost pattern
   // Staging: /devyani-service/api/uploader/* → upload base URL
   // Localhost: /api/uploader/* → baseURL (localhost:8034)
-  // Also check for /uploader/ pattern (after nginx strips /devyani-service/api)
-  if (url.includes("/devyani-service/api/uploader/") || 
-      url.includes(`${reconcii}/uploader/`) ||
-      url.includes("/uploader/upload") ||
-      url.includes("/uploader/validate-columns") ||
-      url.includes("/uploader/analyze-columns") ||
-      url.includes("/uploader/save-column-mappings") ||
-      url.includes("/uploader/status") ||
-      url.includes("/uploader/datasource")) {
-    config.baseURL = reconciiBaseURL; // https://devyaniuploadapi.corepeelers.com
-    return config;
-  }
-  
-  if (url.includes("/api/uploader/")) {
-    // Localhost pattern
-    config.baseURL = isLocalhost ? baseURL : reconciiBaseURL;
+  // Check for uploader endpoints (must come before generic reconcii check)
+  if (url.includes("/uploader/") || url.includes("/uploader")) {
+    if (isLocalhost) {
+      config.baseURL = baseURL; // localhost:8034
+    } else {
+      config.baseURL = reconciiBaseURL; // https://devyaniuploadapi.corepeelers.com
+    }
     return config;
   }
   
@@ -100,7 +88,11 @@ instance.interceptors.request.use((config) => {
   // These use reconcii prefix (/devyani-service/api) and go to upload base URL
   // But exclude reconciliation endpoints which are handled above
   if (url.includes(reconcii) && !url.includes("/reconciliation/api/v1/")) {
-    config.baseURL = reconciiBaseURL;
+    if (isLocalhost) {
+      config.baseURL = baseURL;
+    } else {
+      config.baseURL = reconciiBaseURL;
+    }
     return config;
   }
   
