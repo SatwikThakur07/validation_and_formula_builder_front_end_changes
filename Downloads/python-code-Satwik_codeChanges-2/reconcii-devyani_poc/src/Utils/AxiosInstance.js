@@ -73,9 +73,17 @@ instance.interceptors.request.use((config) => {
     return config;
   }
   
-  // Uploader endpoints - use upload base URL
+  // Uploader endpoints - check for staging pattern first, then localhost pattern
+  // Staging: /devyani-service/api/uploader/* → upload base URL
+  // Localhost: /api/uploader/* → baseURL (localhost:8034)
+  if (url.includes("/devyani-service/api/uploader/") || url.includes(`${reconcii}/uploader/`)) {
+    config.baseURL = reconciiBaseURL; // https://devyaniuploadapi.corepeelers.com
+    return config;
+  }
+  
   if (url.includes("/api/uploader/")) {
-    config.baseURL = reconciiBaseURL;
+    // Localhost pattern
+    config.baseURL = isLocalhost ? baseURL : reconciiBaseURL;
     return config;
   }
   
