@@ -243,7 +243,7 @@ const apiEndpoints = {
   // Upload URLs
   // For localhost: use /api/uploader/* directly (backend routes)
   // For staging: use /devyani-service/api/uploader/* (nginx routes to /api/uploader/*)
-  NEW_DATA_SOURCE_FIELDS: isLocalhost ? "/api/uploader/datasource" : `${reconcii}/datasource`,
+  NEW_DATA_SOURCE_FIELDS: isLocalhost ? "/api/uploader/datasource" : `${reconcii}/uploader/datasource`,
   UPLOAD_FILE: isLocalhost ? "/api/uploader/upload" : `${reconcii}/uploader/upload`,
   ANALYZE_COLUMNS: isLocalhost ? "/api/uploader/analyze-columns" : `${reconcii}/uploader/analyze-columns`,
   VALIDATE_COLUMNS: isLocalhost ? "/api/uploader/validate-columns" : `${reconcii}/uploader/validate-columns`,
