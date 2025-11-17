@@ -33,11 +33,20 @@ export const handleError = ({ message, data, status }) => {
 instance.interceptors.request.use((config) => {
   const url = config?.url || "";
   
+  // Debug logging (remove in production)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[AxiosInstance] Request URL:', url);
+    console.log('[AxiosInstance] isLocalhost:', isLocalhost);
+  }
+  
   // SSO endpoints (including login) - use SSO base URL (highest priority)
   // For localhost: /api/auth/login goes to baseURL (localhost:8034)
   // For staging: /devyani-sso-service/* goes to ssoBaseURL
   if (url.includes("/api/auth/login") || url.includes(sso)) {
     config.baseURL = ssoBaseURL;
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AxiosInstance] Routing to SSO:', ssoBaseURL);
+    }
     return config;
   }
   
@@ -58,6 +67,9 @@ instance.interceptors.request.use((config) => {
       // Staging endpoints use Python backend on upload API
       config.baseURL = reconciiBaseURL; // https://devyaniuploadapi.corepeelers.com
     }
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AxiosInstance] Formula Builder routing to:', config.baseURL);
+    }
     return config;
   }
   
@@ -68,6 +80,9 @@ instance.interceptors.request.use((config) => {
       url.includes("/api/node/reconciliation/recologics") ||
       url.includes("/api/node/reconciliation/datasource")) {
     config.baseURL = reconciiAdminBaseURL; // staging URL
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AxiosInstance] Node reconciliation routing to:', config.baseURL);
+    }
     return config;
   }
   
@@ -75,11 +90,22 @@ instance.interceptors.request.use((config) => {
   // Staging: /devyani-service/api/uploader/* → upload base URL
   // Localhost: /api/uploader/* → baseURL (localhost:8034)
   // Check for uploader endpoints (must come before generic reconcii check)
-  if (url.includes("/uploader/") || url.includes("/uploader")) {
+  // Use more specific patterns to avoid false matches
+  if (url.startsWith("/devyani-service/api/uploader/") ||
+      url.startsWith("/api/uploader/") ||
+      url.includes("/uploader/upload") ||
+      url.includes("/uploader/validate-columns") ||
+      url.includes("/uploader/analyze-columns") ||
+      url.includes("/uploader/save-column-mappings") ||
+      url.includes("/uploader/status") ||
+      url.includes("/uploader/datasource")) {
     if (isLocalhost) {
       config.baseURL = baseURL; // localhost:8034
     } else {
       config.baseURL = reconciiBaseURL; // https://devyaniuploadapi.corepeelers.com
+    }
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AxiosInstance] Uploader routing to:', config.baseURL);
     }
     return config;
   }
@@ -87,11 +113,14 @@ instance.interceptors.request.use((config) => {
   // Reconciliation service endpoints (datasource, etc.) - use reconcii prefix
   // These use reconcii prefix (/devyani-service/api) and go to upload base URL
   // But exclude reconciliation endpoints which are handled above
-  if (url.includes(reconcii) && !url.includes("/reconciliation/api/v1/")) {
+  if (url.includes(reconcii) && !url.includes("/reconciliation/api/v1/") && !url.includes("/uploader/")) {
     if (isLocalhost) {
       config.baseURL = baseURL;
     } else {
       config.baseURL = reconciiBaseURL;
+    }
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AxiosInstance] Generic reconcii routing to:', config.baseURL);
     }
     return config;
   }
@@ -99,12 +128,18 @@ instance.interceptors.request.use((config) => {
   // Activity/audit log endpoints
   if (url.includes(activityURL)) {
     config.baseURL = reconciiAdminBaseURL;
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AxiosInstance] Activity routing to:', config.baseURL);
+    }
     return config;
   }
   
   // Node password URLs
   if (url.includes(nodePasswordUrls)) {
     config.baseURL = reconciiAdminBaseURL;
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AxiosInstance] Node password routing to:', config.baseURL);
+    }
     return config;
   }
   
@@ -117,6 +152,9 @@ instance.interceptors.request.use((config) => {
     // Always use admin base URL for reconciliation node endpoints
     // This ensures proper routing to the Node.js backend
     config.baseURL = reconciiAdminBaseURL;
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AxiosInstance] Reconciliation node routing to:', config.baseURL);
+    }
     return config;
   }
   
@@ -126,10 +164,16 @@ instance.interceptors.request.use((config) => {
     // Localhost Python backend endpoints
     if (isLocalhost) {
       config.baseURL = baseURL;
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[AxiosInstance] Localhost reconciliation routing to:', config.baseURL);
+      }
       return config;
     }
   }
   
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[AxiosInstance] Using default baseURL:', config.baseURL);
+  }
   return config;
 });
 
