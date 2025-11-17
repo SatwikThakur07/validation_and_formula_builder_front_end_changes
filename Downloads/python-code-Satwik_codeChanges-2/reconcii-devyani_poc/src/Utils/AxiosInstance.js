@@ -95,11 +95,22 @@ instance.interceptors.request.use((config) => {
   // Pattern: https://devyaniadminapi.corepeelers.com/api/node/reconciliation/cities
   // For localhost: http://localhost:8034/api/node/reconciliation/cities
   // For staging: https://devyaniadminapi.corepeelers.com/api/node/reconciliation/cities
+  // ALL reconciliation endpoints now use this pattern for staging
   if (url.includes(reconciliationNodeURL)) {
     // Always use admin base URL for reconciliation node endpoints
     // This ensures proper routing to the Node.js backend
     config.baseURL = reconciiAdminBaseURL;
     return config;
+  }
+  
+  // Handle RECONCILIATION_SERVICE endpoints for localhost (Python backend)
+  // For staging, these should have been converted to reconciliationNodeURL above
+  if (url.includes("/api/reconciliation/") && !url.includes("/api/reconciliation/api/v1/")) {
+    // Localhost Python backend endpoints
+    if (isLocalhost) {
+      config.baseURL = baseURL;
+      return config;
+    }
   }
   
   return config;
