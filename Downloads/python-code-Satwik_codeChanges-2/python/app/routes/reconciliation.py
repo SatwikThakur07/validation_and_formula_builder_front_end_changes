@@ -3577,6 +3577,25 @@ async def save_recologics(
         )
 
 
+@router.post("/api/v1/recologics/update")
+async def update_recologics(
+    request_data: SaveRecoLogicsRequest,
+    db: AsyncSession = Depends(get_main_db),
+    current_user: UserDetails = Depends(get_current_user)
+):
+    """
+    Update recologics formulas - same as save but requires ID.
+    This endpoint is for explicit updates (frontend may call this separately).
+    """
+    if request_data.id is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="ID is required for update operation"
+        )
+    # Reuse the save endpoint logic (it handles updates when ID is provided)
+    return await save_recologics(request_data, db, current_user)
+
+
 @router.get("/api/v1/recologics/findOldestEffectiveDate")
 async def find_oldest_effective_date(
     db: AsyncSession = Depends(get_sso_db),
@@ -3597,6 +3616,50 @@ async def find_oldest_effective_date(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error fetching effective date"
+        )
+
+
+@router.get("/api/v1/datasource")
+async def get_datasource_for_mapping(
+    db: AsyncSession = Depends(get_main_db),
+    current_user: UserDetails = Depends(get_current_user)
+):
+    """
+    Get datasource configuration for mapping - used by Formula Builder.
+    Returns data_source values from customised_db_fields table.
+    """
+    try:
+        from sqlalchemy import text
+        
+        logger.info("[DATASOURCE_MAPPING] Controller hit: GET /api/v1/datasource")
+        
+        # Query distinct data_source values from customised_db_fields table
+        query = text("""
+            SELECT DISTINCT data_source 
+            FROM customised_db_fields 
+            WHERE data_source IS NOT NULL 
+            AND data_source != ''
+            ORDER BY data_source
+        """)
+        
+        result = await db.execute(query)
+        rows = result.fetchall()
+        
+        # Extract data_source values into a list
+        datasource_list = [row[0] for row in rows if row[0]]
+        
+        logger.info(f"[DATASOURCE_MAPPING] Found {len(datasource_list)} datasources")
+        
+        return {
+            "success": True,
+            "data": datasource_list
+        }
+        
+    except Exception as e:
+        logger.error(f"[DATASOURCE_MAPPING] Error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error fetching datasource list"
         )
 
 
@@ -3778,6 +3841,178 @@ async def get_recologics_by_topic(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching recologics: {str(e)}"
+        )
+
+
+class TenderWiseTablesRequest(BaseModel):
+    """Request model for getting tender-wise tables"""
+    tenders: Union[str, List[str]]  # Can be string (comma-separated) or list
+
+
+@router.post("/api/v1/tenderWisetables")
+async def get_tender_wise_tables(
+    request_data: TenderWiseTablesRequest,
+    db: AsyncSession = Depends(get_main_db),
+    current_user: UserDetails = Depends(get_current_user)
+):
+    """
+    Get tender-wise tables and columns from customised_db_fields table.
+    Returns data grouped by tender -> dataSource -> columns.
+    
+    Expected response format:
+    {
+        "success": true,
+        "data": [
+            {
+                "tender": "Zomato",
+                "dataSourceWiseColumns": [
+                    {
+                        "dataSourceName": "ZOMATO",
+                        "tableName": "zomato_table",
+                        "columns": [
+                            {
+                                "excelColumnName": "amount",
+                                "dbColumnName": "amount",
+                                "columnName": "amount"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+    """
+    try:
+        from sqlalchemy import text
+        
+        logger.info("[TENDER_WISE_TABLES] Controller hit: POST /api/v1/tenderWisetables")
+        logger.info(f"[TENDER_WISE_TABLES] Request tenders: {request_data.tenders}")
+        
+        # Normalize tenders
+        if isinstance(request_data.tenders, list):
+            tender_list = [t.strip() for t in request_data.tenders]
+        else:
+            tender_list = [t.strip() for t in request_data.tenders.split(",")]
+        
+        if not tender_list:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="At least one tender is required"
+            )
+        
+        # Format tender names to match database format (replace spaces with underscores, uppercase)
+        def format_tender_for_db(tender):
+            """Format tender name for database query"""
+            # Replace spaces with underscores and convert to uppercase
+            return tender.replace(' ', '_').upper()
+        
+        db_tender_list = [format_tender_for_db(t) for t in tender_list]
+        
+        logger.info(f"[TENDER_WISE_TABLES] Formatted tenders for DB: {db_tender_list}")
+        
+        # Query customised_db_fields table to get columns grouped by tender and data_source
+        # We need to get: tender_name, data_source, excel_column_name, db_column_name, table_name
+        # Use parameterized query with IN clause
+        if len(db_tender_list) == 1:
+            query = text("""
+                SELECT 
+                    tender_name,
+                    data_source,
+                    excel_column_name,
+                    db_column_name,
+                    table_name
+                FROM customised_db_fields
+                WHERE tender_name = :tender_name
+                AND data_source IS NOT NULL
+                AND excel_column_name IS NOT NULL
+                ORDER BY tender_name, data_source, excel_column_name
+            """)
+            result = await db.execute(query, {"tender_name": db_tender_list[0]})
+        else:
+            # Build IN clause with placeholders
+            placeholders = ",".join([f":tender_{i}" for i in range(len(db_tender_list))])
+            query = text(f"""
+                SELECT 
+                    tender_name,
+                    data_source,
+                    excel_column_name,
+                    db_column_name,
+                    table_name
+                FROM customised_db_fields
+                WHERE tender_name IN ({placeholders})
+                AND data_source IS NOT NULL
+                AND excel_column_name IS NOT NULL
+                ORDER BY tender_name, data_source, excel_column_name
+            """)
+            params = {f"tender_{i}": tender for i, tender in enumerate(db_tender_list)}
+            result = await db.execute(query, params)
+        rows = result.fetchall()
+        
+        logger.info(f"[TENDER_WISE_TABLES] Found {len(rows)} records")
+        
+        # Group data by tender -> dataSource -> columns
+        tender_data_map = {}
+        
+        for row in rows:
+            tender_name = row[0]
+            data_source = row[1]
+            excel_column_name = row[2]
+            db_column_name = row[3] or excel_column_name
+            table_name = row[4] or f"{data_source.lower()}_table"
+            
+            # Format tender name back to display format
+            display_tender = tender_name.replace('_', ' ').title()
+            if 'POS' in display_tender.upper():
+                # Keep POS uppercase
+                display_tender = display_tender.replace('Pos', 'POS').replace('pos', 'POS')
+            
+            # Initialize tender if not exists
+            if display_tender not in tender_data_map:
+                tender_data_map[display_tender] = {}
+            
+            # Initialize dataSource if not exists
+            if data_source not in tender_data_map[display_tender]:
+                tender_data_map[display_tender][data_source] = {
+                    "dataSourceName": data_source,
+                    "tableName": table_name,
+                    "columns": []
+                }
+            
+            # Add column
+            column_info = {
+                "excelColumnName": excel_column_name,
+                "dbColumnName": db_column_name,
+                "columnName": excel_column_name  # Use excel column name as display name
+            }
+            
+            # Avoid duplicates
+            existing_columns = [c["excelColumnName"] for c in tender_data_map[display_tender][data_source]["columns"]]
+            if excel_column_name not in existing_columns:
+                tender_data_map[display_tender][data_source]["columns"].append(column_info)
+        
+        # Convert to expected response format
+        response_data = []
+        for tender, data_sources in tender_data_map.items():
+            tender_entry = {
+                "tender": tender,
+                "dataSourceWiseColumns": list(data_sources.values())
+            }
+            response_data.append(tender_entry)
+        
+        logger.info(f"[TENDER_WISE_TABLES] Returning {len(response_data)} tender(s) with columns")
+        
+        return {
+            "success": True,
+            "data": response_data
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("[TENDER_WISE_TABLES] Error: %s", str(e), exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching tender-wise tables: {str(e)}"
         )
 
 

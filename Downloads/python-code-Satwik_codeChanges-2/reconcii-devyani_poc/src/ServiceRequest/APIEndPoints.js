@@ -233,10 +233,10 @@ const apiEndpoints = {
   UPDATE_ALL_RECO_LOGICS: isLocalhost ? "/api/reconciliation/api/v1/recologics/update" : `${reconcii}/reconciliation/api/v1/recologics/update`,
   GET_ALL_RECO_LOGICS: isLocalhost ? "/api/reconciliation/api/v1/recologics/getAll" : `${reconcii}/reconciliation/api/v1/recologics/getAll`,
   GET_RECO_LOGICS_BY_TOPIC: isLocalhost ? "/api/reconciliation/api/v1/recologics/get" : `${reconcii}/reconciliation/api/v1/recologics/get`,
-  GET_ALL_DATA_SOURCE_FOR_MAPPING: isLocalhost ? "/api/reconciliation/api/v1/datasource" : `${reconciliationNodeURL}/datasource`,
+  GET_ALL_DATA_SOURCE_FOR_MAPPING: isLocalhost ? "/api/reconciliation/api/v1/datasource" : `${reconcii}/reconciliation/api/v1/datasource`,
   EXCEL_DB_COLUMN_MAPPING_BY_DATASOURCE: isLocalhost ? `${RECONCILIATION_SERVICE}/api/ve1/customisedfields/getExcelDbColumMappingByDataSource/` : `${reconciliationNodeURL}/api/ve1/customisedfields/getExcelDbColumMappingByDataSource/`,
   UPDATE_EXCEL_DB_COLUMN_MAPPING_BY_DATASOURCE: isLocalhost ? `${RECONCILIATION_SERVICE}/api/ve1/customisedfields/updateExcelDbColumMapping` : `${reconciliationNodeURL}/api/ve1/customisedfields/updateExcelDbColumMapping`,
-  FIND_OLDEST_EFFECTIVE_DATE: isLocalhost ? `${RECONCILIATION_SERVICE}/api/v1/recologics/findOldestEffectiveDate` : `${reconciliationNodeURL}/recologics/findOldestEffectiveDate`,
+  FIND_OLDEST_EFFECTIVE_DATE: isLocalhost ? "/api/reconciliation/api/v1/recologics/findOldestEffectiveDate" : `${reconcii}/reconciliation/api/v1/recologics/findOldestEffectiveDate`,
 
   SAVE_AUDIT_LOG: isLocalhost ? `${RECONCILIATION_SERVICE}/api/v2/auditlog/save` : `${reconciliationNodeURL}/api/v2/auditlog/save`,
 
@@ -244,7 +244,7 @@ const apiEndpoints = {
   // For localhost: use /api/uploader/* directly (backend routes)
   // For staging: use /devyani-service/api/uploader/* (nginx routes to /api/uploader/*)
   NEW_DATA_SOURCE_FIELDS: isLocalhost ? "/api/uploader/datasource" : `${reconcii}/datasource`,
-  UPLOAD_FILE: isLocalhost ? "/api/uploader/upload" : `${reconcii}/upload`,
+  UPLOAD_FILE: isLocalhost ? "/api/uploader/upload" : `${reconcii}/uploader/upload`,
   ANALYZE_COLUMNS: isLocalhost ? "/api/uploader/analyze-columns" : `${reconcii}/uploader/analyze-columns`,
   VALIDATE_COLUMNS: isLocalhost ? "/api/uploader/validate-columns" : `${reconcii}/uploader/validate-columns`,
   SAVE_COLUMN_MAPPINGS: isLocalhost ? "/api/uploader/save-column-mappings" : `${reconcii}/uploader/save-column-mappings`,
