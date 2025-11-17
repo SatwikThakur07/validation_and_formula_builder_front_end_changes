@@ -223,16 +223,15 @@ const apiEndpoints = {
   // GET_ASYNC_GENERATE_REPORT_DATA: `${RECONCILIATION_SERVICE}/public/generated-reports/getAll`,
 
   // New URLs - Formula Builder endpoints
-  // Backend routes are mounted at /api/reconciliation, so endpoints are:
-  // /api/reconciliation/api/v1/tenderWisetables (for localhost)
-  // /reconcii-devyani-service/api/v1/tenderWisetables (for staging)
-  GET_TENDER_LIST: isLocalhost ? "/api/reconciliation/api/v1/tenderList" : `${RECONCILIATION_SERVICE}/api/v1/tenderList`,
-  GET_TENDER_WISE_TABLES_LIST: isLocalhost ? "/api/reconciliation/api/v1/tenderWisetables" : `${RECONCILIATION_SERVICE}/api/v1/tenderWisetables`,
-  SAVE_ALL_RECO_LOGICS: isLocalhost ? "/api/v1/recologics/save" : `${RECONCILIATION_SERVICE}/api/v1/recologics/save`,
-  UPDATE_ALL_RECO_LOGICS: isLocalhost ? "/api/reconciliation/api/v1/recologics/update" : `${RECONCILIATION_SERVICE}/api/v1/recologics/update`,
-  GET_ALL_RECO_LOGICS: isLocalhost ? "/api/reconciliation/api/v1/recologics/getAll" : `${RECONCILIATION_SERVICE}/api/v1/recologics/getAll`,
-  GET_RECO_LOGICS_BY_TOPIC: isLocalhost ? "/api/reconciliation/api/v1/recologics/get" : `${RECONCILIATION_SERVICE}/api/v1/recologics/get`,
-  GET_ALL_DATA_SOURCE_FOR_MAPPING: isLocalhost ? "/api/reconciliation/api/v1/datasource" : `${RECONCILIATION_SERVICE}/api/v1/datasource`,
+  // For staging: Use Node.js backend pattern /api/node/reconciliation/*
+  // For localhost: Use Python backend pattern /api/reconciliation/api/v1/*
+  GET_TENDER_LIST: isLocalhost ? "/api/reconciliation/api/v1/tenderList" : `${reconciliationNodeURL}/tenderList`,
+  GET_TENDER_WISE_TABLES_LIST: isLocalhost ? "/api/reconciliation/api/v1/tenderWisetables" : `${reconciliationNodeURL}/tenderWisetables`,
+  SAVE_ALL_RECO_LOGICS: isLocalhost ? "/api/v1/recologics/save" : `${reconciliationNodeURL}/recologics/save`,
+  UPDATE_ALL_RECO_LOGICS: isLocalhost ? "/api/reconciliation/api/v1/recologics/update" : `${reconciliationNodeURL}/recologics/update`,
+  GET_ALL_RECO_LOGICS: isLocalhost ? "/api/reconciliation/api/v1/recologics/getAll" : `${reconciliationNodeURL}/recologics/getAll`,
+  GET_RECO_LOGICS_BY_TOPIC: isLocalhost ? "/api/reconciliation/api/v1/recologics/get" : `${reconciliationNodeURL}/recologics/get`,
+  GET_ALL_DATA_SOURCE_FOR_MAPPING: isLocalhost ? "/api/reconciliation/api/v1/datasource" : `${reconciliationNodeURL}/datasource`,
   EXCEL_DB_COLUMN_MAPPING_BY_DATASOURCE: `${RECONCILIATION_SERVICE}/api/ve1/customisedfields/getExcelDbColumMappingByDataSource/`,
   UPDATE_EXCEL_DB_COLUMN_MAPPING_BY_DATASOURCE: `${RECONCILIATION_SERVICE}/api/ve1/customisedfields/updateExcelDbColumMapping`,
   FIND_OLDEST_EFFECTIVE_DATE: `${RECONCILIATION_SERVICE}/api/v1/recologics/findOldestEffectiveDate`,

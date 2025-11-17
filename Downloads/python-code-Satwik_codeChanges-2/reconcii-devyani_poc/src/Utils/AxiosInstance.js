@@ -42,20 +42,27 @@ instance.interceptors.request.use((config) => {
   }
   
   // Formula Builder endpoints (recologics) - use baseURL for localhost, admin base URL for staging
-  // These endpoints use /api/reconciliation/api/v1/ prefix for localhost
+  // For localhost: /api/reconciliation/api/v1/* (Python backend)
+  // For staging: /api/node/reconciliation/* (Node.js backend)
   if (url.includes("/api/reconciliation/api/v1/") || 
       url.includes("/api/v1/recologics") || 
       url.includes("/api/v1/tenderList") ||
       url.includes("/api/v1/tenderWisetables") ||
-      url.includes("/api/v1/datasource") ||
-      url.includes("/reconcii-devyani-service")) {
-    // For localhost endpoints (/api/reconciliation/api/v1/), use baseURL
-    // For staging endpoints (/reconcii-devyani-service), use admin base URL
-    if (url.includes("/api/reconciliation/api/v1/")) {
+      url.includes("/api/v1/datasource")) {
+    // Localhost endpoints use Python backend
+    if (url.includes("/api/reconciliation/api/v1/") || url.includes("/api/v1/")) {
       config.baseURL = baseURL; // localhost:8034 for localhost
-    } else {
-      config.baseURL = reconciiAdminBaseURL; // staging URL
     }
+    return config;
+  }
+  
+  // Formula Builder endpoints for staging (Node.js backend pattern)
+  // These use /api/node/reconciliation/* and should route to admin base URL
+  if (url.includes("/api/node/reconciliation/tenderList") ||
+      url.includes("/api/node/reconciliation/tenderWisetables") ||
+      url.includes("/api/node/reconciliation/recologics") ||
+      url.includes("/api/node/reconciliation/datasource")) {
+    config.baseURL = reconciiAdminBaseURL; // staging URL
     return config;
   }
   
