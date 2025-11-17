@@ -41,22 +41,29 @@ instance.interceptors.request.use((config) => {
     return config;
   }
   
-  // Formula Builder endpoints (recologics) - use baseURL for localhost, admin base URL for staging
-  // For localhost: /api/reconciliation/api/v1/* (Python backend)
-  // For staging: /api/node/reconciliation/* (Node.js backend)
+  // Formula Builder endpoints (recologics) - use baseURL for localhost, upload base URL for staging
+  // For localhost: /api/reconciliation/api/v1/* (Python backend on localhost:8034)
+  // For staging: /devyani-service/api/reconciliation/api/v1/* (Python backend on upload API)
   if (url.includes("/api/reconciliation/api/v1/") || 
+      url.includes("/devyani-service/api/reconciliation/api/v1/") ||
       url.includes("/api/v1/recologics") || 
       url.includes("/api/v1/tenderList") ||
       url.includes("/api/v1/tenderWisetables") ||
       url.includes("/api/v1/datasource")) {
-    // Localhost endpoints use Python backend
-    if (url.includes("/api/reconciliation/api/v1/") || url.includes("/api/v1/")) {
+    // Localhost endpoints use Python backend on baseURL
+    if (isLocalhost && (url.includes("/api/reconciliation/api/v1/") || url.includes("/api/v1/"))) {
       config.baseURL = baseURL; // localhost:8034 for localhost
+    } else if (url.includes("/devyani-service/api/reconciliation/api/v1/")) {
+      // Staging endpoints use Python backend on upload API
+      config.baseURL = reconciiBaseURL; // https://devyaniuploadapi.corepeelers.com
+    } else if (url.includes("/api/reconciliation/api/v1/")) {
+      // Fallback for staging - use upload base URL
+      config.baseURL = reconciiBaseURL;
     }
     return config;
   }
   
-  // Formula Builder endpoints for staging (Node.js backend pattern)
+  // Formula Builder endpoints for staging (Node.js backend pattern) - DEPRECATED, kept for backward compatibility
   // These use /api/node/reconciliation/* and should route to admin base URL
   if (url.includes("/api/node/reconciliation/tenderList") ||
       url.includes("/api/node/reconciliation/tenderWisetables") ||

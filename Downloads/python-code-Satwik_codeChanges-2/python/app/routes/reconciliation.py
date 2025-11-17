@@ -3600,6 +3600,187 @@ async def find_oldest_effective_date(
         )
 
 
+@router.get("/api/v1/recologics/getAll")
+async def get_all_recologics(
+    tenders: Optional[str] = Query(None, description="Comma-separated list of tenders to filter by"),
+    db: AsyncSession = Depends(get_main_db),
+    current_user: UserDetails = Depends(get_current_user)
+):
+    """
+    Get all recologics formulas from the reco_logics table.
+    Optionally filter by tenders.
+    """
+    try:
+        from sqlalchemy import text
+        import json
+        
+        logger.info(f"[GET_ALL_RECOLOGICS] Controller hit, tenders: {tenders}")
+        
+        # Build query with optional tender filter
+        if tenders:
+            tender_list = [t.strip() for t in tenders.split(',')]
+            tender_filter = " OR ".join([f"tender LIKE '%{t}%'" for t in tender_list])
+            query = text(f"""
+                SELECT 
+                    id,
+                    tender,
+                    recologic,
+                    effective_from,
+                    effective_to,
+                    effective_type,
+                    created_date,
+                    updated_date
+                FROM reco_logics
+                WHERE ({tender_filter})
+                ORDER BY created_date DESC
+            """)
+        else:
+            query = text("""
+                SELECT 
+                    id,
+                    tender,
+                    recologic,
+                    effective_from,
+                    effective_to,
+                    effective_type,
+                    created_date,
+                    updated_date
+                FROM reco_logics
+                ORDER BY created_date DESC
+            """)
+        
+        result = await db.execute(query)
+        rows = result.fetchall()
+        
+        # Format response
+        formulas = []
+        for row in rows:
+            try:
+                recologic_data = json.loads(row[2]) if row[2] and isinstance(row[2], str) else (row[2] if row[2] else [])
+            except:
+                recologic_data = []
+            
+            formulas.append({
+                "id": row[0],
+                "tender": row[1],
+                "recologic": recologic_data,
+                "effective_from": row[3].isoformat() if row[3] else None,
+                "effective_to": row[4].isoformat() if row[4] else None,
+                "effective_type": row[5],
+                "created_date": row[6].isoformat() if row[6] else None,
+                "updated_date": row[7].isoformat() if row[7] else None,
+            })
+        
+        logger.info(f"[GET_ALL_RECOLOGICS] Found {len(formulas)} formulas")
+        return {
+            "success": True,
+            "data": formulas
+        }
+        
+    except Exception as e:
+        logger.error(f"[GET_ALL_RECOLOGICS] Error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching recologics: {str(e)}"
+        )
+
+
+@router.get("/api/v1/recologics/get")
+async def get_recologics_by_topic(
+    tenders: Optional[str] = Query(None, description="Comma-separated list of tenders to filter by"),
+    topic: Optional[str] = Query(None, description="Topic to filter by"),
+    db: AsyncSession = Depends(get_main_db),
+    current_user: UserDetails = Depends(get_current_user)
+):
+    """
+    Get recologics formulas filtered by topic (tender).
+    Similar to getAll but with topic parameter for compatibility.
+    """
+    try:
+        from sqlalchemy import text
+        import json
+        
+        logger.info(f"[GET_RECOLOGICS_BY_TOPIC] Controller hit, tenders: {tenders}, topic: {topic}")
+        
+        # Use tenders or topic (they're the same thing)
+        filter_tender = tenders or topic
+        
+        # Build query with optional tender filter
+        if filter_tender:
+            tender_list = [t.strip() for t in filter_tender.split(',')]
+            tender_filter = " OR ".join([f"tender LIKE '%{t}%'" for t in tender_list])
+            query = text(f"""
+                SELECT 
+                    id,
+                    tender,
+                    recologic,
+                    effective_from,
+                    effective_to,
+                    effective_type,
+                    created_date,
+                    updated_date
+                FROM reco_logics
+                WHERE ({tender_filter})
+                ORDER BY created_date DESC
+            """)
+        else:
+            query = text("""
+                SELECT 
+                    id,
+                    tender,
+                    recologic,
+                    effective_from,
+                    effective_to,
+                    effective_type,
+                    created_date,
+                    updated_date
+                FROM reco_logics
+                ORDER BY created_date DESC
+            """)
+        
+        result = await db.execute(query)
+        rows = result.fetchall()
+        
+        # Format response
+        formulas = []
+        for row in rows:
+            try:
+                recologic_data = json.loads(row[2]) if row[2] and isinstance(row[2], str) else (row[2] if row[2] else [])
+            except:
+                recologic_data = []
+            
+            # Extract logicName from recologic data if available
+            logic_name = None
+            if isinstance(recologic_data, list) and len(recologic_data) > 0:
+                if isinstance(recologic_data[0], dict) and 'logicName' in recologic_data[0]:
+                    logic_name = recologic_data[0]['logicName']
+            
+            formulas.append({
+                "id": row[0],
+                "tender": row[1],
+                "logicName": logic_name or f"Formula_{row[0]}",
+                "recologic": recologic_data,
+                "effective_from": row[3].isoformat() if row[3] else None,
+                "effective_to": row[4].isoformat() if row[4] else None,
+                "effective_type": row[5],
+                "created_date": row[6].isoformat() if row[6] else None,
+                "updated_date": row[7].isoformat() if row[7] else None,
+            })
+        
+        logger.info(f"[GET_RECOLOGICS_BY_TOPIC] Found {len(formulas)} formulas")
+        return {
+            "success": True,
+            "data": formulas
+        }
+        
+    except Exception as e:
+        logger.error(f"[GET_RECOLOGICS_BY_TOPIC] Error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching recologics: {str(e)}"
+        )
+
+
 @router.get("/api/v1/tenderList")
 async def get_tender_list(
     db: AsyncSession = Depends(get_main_db),
