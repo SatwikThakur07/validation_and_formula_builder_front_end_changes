@@ -117,7 +117,7 @@ instance.interceptors.request.use((config) => {
     if (isLocalhost) {
       config.baseURL = baseURL;
     } else {
-      config.baseURL = reconciiBaseURL;
+    config.baseURL = reconciiBaseURL;
     }
     if (process.env.NODE_ENV === 'development') {
       console.log('[AxiosInstance] Generic reconcii routing to:', config.baseURL);
