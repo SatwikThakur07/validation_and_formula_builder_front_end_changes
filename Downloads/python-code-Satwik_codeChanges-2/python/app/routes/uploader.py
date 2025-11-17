@@ -508,12 +508,14 @@ async def validate_columns(
     datasource: str = Form(...),
     client: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_sso_db),
+    main_db: AsyncSession = Depends(get_main_db),
     current_user: UserDetails = Depends(get_current_user)
 ):
     """
     Get column mappings for validation.
-    Can use either upload_id (for already uploaded file) or file (for new file).
+    Can use upload_id (for already uploaded file), file (for new file), or neither (returns DB columns only).
     Returns DB columns on left and Excel columns for selection.
+    When no file is provided, returns DB columns from customised_db_fields table.
     """
     try:
         file_to_analyze = None
@@ -548,13 +550,71 @@ async def validate_columns(
             filename = file.filename
             logger.info(f"[VALIDATE-COLUMNS] Using directly uploaded file: {filename}")
         
+        # If no file is provided, return DB columns from database
         if not file_to_analyze:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Either upload_id or file must be provided"
-            )
+            logger.info(f"[VALIDATE-COLUMNS] No file provided, fetching DB columns from database for datasource: {datasource}")
+            
+            try:
+                # Query customised_db_fields table to get DB columns for this datasource
+                query = text("""
+                    SELECT DISTINCT
+                        db_column_name,
+                        excel_column_name
+                    FROM customised_db_fields 
+                    WHERE data_source = :datasource
+                    AND db_column_name IS NOT NULL 
+                    AND db_column_name != ''
+                    ORDER BY db_column_name
+                """)
+                
+                result = await main_db.execute(query, {"datasource": datasource})
+                rows = result.fetchall()
+                
+                # Extract DB columns and existing mappings
+                db_columns = []
+                mappings = {}
+                for row in rows:
+                    db_column = row[0]
+                    excel_column = row[1] if row[1] else None
+                    db_columns.append(db_column)
+                    if excel_column:
+                        mappings[db_column] = excel_column
+                
+                logger.info(f"[VALIDATE-COLUMNS] Found {len(db_columns)} DB columns for datasource: {datasource}")
+                
+                # Return response with DB columns only (no Excel columns since no file was provided)
+                formatted_result = {
+                    "status": 200,
+                    "message": f"DB columns retrieved for datasource: {datasource}. No file provided, so Excel columns are empty.",
+                    "data": {
+                        "validation_data": {
+                            "db_columns": db_columns,
+                            "excel_columns": [],  # Empty since no file was provided
+                            "mappings": mappings  # Existing mappings from database
+                        }
+                    }
+                }
+                
+                logger.info(f"[VALIDATE-COLUMNS] Successfully retrieved DB columns for datasource: {datasource}")
+                return formatted_result
+                
+            except Exception as db_error:
+                logger.error(f"[VALIDATE-COLUMNS] Error querying database for DB columns: {str(db_error)}", exc_info=True)
+                # If database query fails, return empty result
+                formatted_result = {
+                    "status": 200,
+                    "message": f"Could not retrieve DB columns from database. Error: {str(db_error)}",
+                    "data": {
+                        "validation_data": {
+                            "db_columns": [],
+                            "excel_columns": [],
+                            "mappings": {}
+                        }
+                    }
+                }
+                return formatted_result
         
-        # Analyze columns using FeynmanFlow API
+        # If file is provided, analyze it using FeynmanFlow API
         analyze_url = f"{FEYNMANFLOW_API_BASE_URL}/analyze-columns"
         
         async with httpx.AsyncClient(timeout=60.0) as http_client:
