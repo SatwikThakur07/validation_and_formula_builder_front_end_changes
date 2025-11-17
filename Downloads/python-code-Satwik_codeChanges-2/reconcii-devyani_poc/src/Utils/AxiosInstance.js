@@ -10,6 +10,9 @@ import {
   nodePasswordUrls,
   reconciliationNodeURL,
 } from "../ServiceRequest/APIEndPoints";
+
+// Auto-detect localhost for routing decisions
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const instance = axios.create({
   baseURL: baseURL,
   responseType: "json",
@@ -81,8 +84,13 @@ instance.interceptors.request.use((config) => {
     return config;
   }
   
-  // Reconciliation node URLs
+  // Reconciliation node URLs (/api/node/reconciliation/*)
+  // Pattern: https://devyaniadminapi.corepeelers.com/api/node/reconciliation/cities
+  // For localhost: http://localhost:8034/api/node/reconciliation/cities
+  // For staging: https://devyaniadminapi.corepeelers.com/api/node/reconciliation/cities
   if (url.includes(reconciliationNodeURL)) {
+    // Always use admin base URL for reconciliation node endpoints
+    // This ensures proper routing to the Node.js backend
     config.baseURL = reconciiAdminBaseURL;
     return config;
   }
